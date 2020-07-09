@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Simulation Game</title>
+    <link rel="stylesheet" href="css/index.css" />
+
+    <script type="module" src="js/main.js"></script>
+
+    <!-- use Cloud Firestore as database -->
+    <script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-firestore.js"></script>
+  </head>
+
+  <body>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="/__/firebase/7.15.5/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+      https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="/__/firebase/7.15.5/firebase-analytics.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script src="/__/firebase/init.js"></script>
+
+    <div class="nav-bar">
+      <a href="/index.html"><b>Home</b></a>
+      <a href="/simulation.html"><b>Simulation</b></a>
+    </div>
+
+    <div id="content" class="center">
+
+      <h1>Simulation Game</h1>
+
+      <!-- initially, this should be the only thing visible. -->
+      <div class="symbol">
+        <form>
+          <label>Enter the symbol of the stock/ETF/MF:</label>
+          <input type="text" name="symbol" id="usr-symbol" placeholder="GOOG">
+          <input type="submit"/>
+          <br><br>
+        </form>
+      </div>
+
+      <div class="shares">
+        <form>
+          <label>The price is $100 per share. How many do you want to buy?</label>
+          <input type="number" id="num-shares" placeholder="10">
+          <input type="submit"/>
+          <br><br>
+        </form>
+      </div>
+
+      <div id="confirmation"></div>
+
+    </div>
+
+  </body>
+</html>
