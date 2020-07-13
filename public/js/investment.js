@@ -9,6 +9,7 @@ class Investment {
     this.total_purchase_price = share_price * num_shares;
   }
 
+  /* to allow for writing Investment object to database */
   to_dict() {
     const data = {
       "symbol": this.symbol,
@@ -20,6 +21,7 @@ class Investment {
     return data;
   }
 
+  /* to interpret Investment from database */
   static from_dict(source) {
     const symbol = source["symbol"];
     const share_price = source["share_price"];
