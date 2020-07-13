@@ -30,6 +30,7 @@
     firebase.firestore();
   </script>
 
+  <script type="text/javascript" src="js/investment.js"></script>
   <script type="text/javascript" src="js/simulation.js"></script>
 
   </head>
@@ -45,23 +46,16 @@
 
       <h1>Simulation Game</h1>
 
-      <!-- initially, this is the only form element visible. -->
-      <div id="symbol">
-        <form>
-          <label>Enter the symbol of the stock/ETF/MF:</label>
-          <input type="text" name="symbol" id="usr-symbol" placeholder="GOOG">
-          <input type="submit" onclick="return onSymbolEntry();"/>
-          <br><br>
-        </form>
+      <div id="buy">
+        <button onclick="buy()">Buy</button>
       </div>
 
-      <div id="shares">
-        <form>
-          <label>The price is $100 per share. How many do you want to buy?</label>
-          <input type="number" id="num-shares" placeholder="10">
-          <input type="submit" id="submit-shares" />
-          <br><br>
-        </form>
+      <div id="sell">
+        <button>Sell</button>
+      </div>
+
+      <div id="hold">
+        <button>Hold</button>
       </div>
 
       <div id="confirmation"></div>

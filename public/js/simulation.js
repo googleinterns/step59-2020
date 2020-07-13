@@ -1,46 +1,61 @@
 'use strict';
 
 var db = firebase.firestore();
-var userID = null;
+var roomID = null;
 const STARTING_MONEY = 10000;
+var userNumber = 0;
+
+const SYMBOL = 'GOOG';
+const GOOG_TS = [100, 200, 150];
 
 function init() {
-  document.getElementById('shares').style.visibility = "hidden";
-  setUpFirestoreForUser();
+  setUpFirestoreForRoom();
 }
 
-function onSymbolEntry() {
-  const userSymbol = document.getElementById('usr-symbol').value;
-  updateSymbolInDatabase(userSymbol);
-}
+async function setUpFirestoreForRoom() {
+  const roomRef = db.collection('rooms').doc();  // makes rooms (collection) --> roomID (document)
+  roomID = roomRef.id;
 
-async function updateSymbolInDatabase(userSymbol) {
-  const simRef = db.collection('users').doc(userID).collection('simulation');
-  const portfolioRef = simRef.doc('portfolio');
-
-  const portfolioRes = await portfolioRef.update({symbol: userSymbol});
-}
-
-async function setUpFirestoreForUser() {
-  const portfolio_data = {
-    gains: 0,
-    money_left: STARTING_MONEY,
-    investments: [],
-    losses: 0,
-    personal_value: STARTING_MONEY,
-    symbol: null
-  }
-
-  const stats_data = {
-    current_price: null,
+  // TODO: send POST request to get time series data for GOOG
+  // for prototype, hard-code 3 points in JSON format
+  roomRef.set({
     day_index: 0,
-    time_series: null
+    GOOG: GOOG_TS
+  });
+
+  const userRef = roomRef.collection(`user${userNumber}`);
+
+  const gameInfo = {
+    investments: [],
+    personal_value: STARTING_MONEY,
+    money_left: STARTING_MONEY,
+    gains: 0,
+    losses: 0,
   }
 
-  const userDocRef = db.collection('users').doc();
-  userID = userDocRef.id;
-  const simRef = userDocRef.collection('simulation');
-
-  const portfolioRes = await simRef.doc('portfolio').set(portfolio_data);
-  const statsRes = await simRef.doc('stats').set(stats_data);
+  const gameInfoRes = await userRef.doc('game-info').set(gameInfo);
 }
+
+function buy() {
+
+  getPriceFromFirestore().then(price => {
+
+    const invObj = new Investment(SYMBOL, price, 5);
+    const inv = invObj.to_dict();
+    const userRef = db.collection('rooms').doc(roomID).collection(`user${userNumber}`);
+    const gameInfoRef = userRef.doc('game-info');
+
+    // add investment and update money_left
+    gameInfoRef.update({
+      investments: firebase.firestore.FieldValue.arrayUnion(inv),
+      money_left: firebase.firestore.FieldValue.increment(-500)
+    });
+  })
+}
+
+async function getPriceFromFirestore() {
+  const roomDoc = await db.collection('rooms').doc(roomID).get();
+  const roomData = roomDoc.data();
+  return roomData.GOOG[roomData.day_index];
+}
+
