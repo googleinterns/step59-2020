@@ -10,8 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
 
     <!-- use Cloud Firestore as database -->
-    <script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-auth.js"></script>
 
     <script>
       // Your web app's Firebase configuration
@@ -46,9 +46,21 @@
 
       <h1>Simulation Game</h1>
 
+      <p id="price"></p>
+      <p id="usr-current-shares"></p>
+      <p id="usr-available-money"></p>
+
       <div id="buy">
         <button onclick="buy()">Buy</button>
       </div>
+      <br>
+<!--
+      <form id="shares-form">
+        <label>Enter the number of shares:</label>
+        <input type="number" name="num-shares" min="0" placeholder="10">
+        <input type="submit" onsubmit="makeInvestment()">
+      </form>
+      <br> -->
 
       <div id="sell">
         <button>Sell</button>
