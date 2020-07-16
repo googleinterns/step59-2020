@@ -7,7 +7,7 @@ import {BrowserRouter as Router, Route} from 'react-router-dom';
 
 import Home from './Home';
 import GameLobby from './quiz/Lobby.js';
-import Play from './quiz/Play.js';
+import Round from './quiz/Round';
 import SignIn from "./authenticate/SignIn";
 import SignUp from "./authenticate/SignUp";
 
@@ -16,7 +16,7 @@ function Game() {
     <Router>
       <Route path = "/" exact component={Home}/>
       <Route path = "/play/lobby" exact component={GameLobby}/>
-      <Route path = "/play/game" exact component={Play}/>
+      <Route path = "/play/round" exact component={Round}/>
       <Route path = "/auth/signIn" exact component={SignIn}/>
       <Route path = "/auth/signUp" exact component={SignUp}/>
     </Router>

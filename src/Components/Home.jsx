@@ -1,32 +1,19 @@
-/*import React from "react";
-import { Router } from "@reach/router";
-import SignIn from "./authenticate/SignIn";
-import SignUp from "./authenticate/SignUp";
-function Home() {
-  const user = null;
-  return (
-    <Router>
-        <SignUp path="signUp" />
-        <SignIn path="/" />
-    </Router>
-
-  );
-}
-export default Home;
-*/
-
-import React, {Fragment} from 'react';
+import React, {Fragment,useContext} from 'react';
 import {Helmet} from 'react-helmet';
 import {Link} from 'react-router-dom';
 
 import UserProvider from "../providers/UserProvider";
 import { UserContext } from "../providers/UserProvider";
+import GameLobby from "./quiz/Lobby";
 
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 const Home = () => {
-    //const user = useContext(UserContext);        
+    const user = useContext(UserContext);        
     return (
+        user ?
+        <GameLobby />
+        :
         <Fragment>
             <Helmet> <title> toohak stonks quizzes </title> </Helmet>
             <div id="home">

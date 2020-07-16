@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import {Link} from 'react-router-dom';
 import {Helmet} from 'react-helmet';
 
-const GameLobby = () => (
+const GameLobby = () => { return (
     <Fragment>
         <Helmet><title>Game Lobby</title></Helmet>
         <div className="room code container">
@@ -18,9 +18,9 @@ const GameLobby = () => (
                 <li>Yeet</li>
             </ul>
         </div>
-        <Link to="/play/game"> start game </Link>
+        <Link to="/play/round"> start game </Link>
     </Fragment>
 
-)
+)}
 
 export default GameLobby;
