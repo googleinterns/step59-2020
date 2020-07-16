@@ -34,16 +34,12 @@ end-date- The last date of the period in format 2017-08-10 00:00:00
 Returns:
 A success code and it uploads the image to firebase cloud storage.
 '''
-@app.route('/get-stock-image',methods=['GET'])
+@app.route('/get-stock-image',methods=['POST'])
 def get_stock_image():
-    # symbol = request.form['symbol']
-    # period = request.form['periodLen']
-    # roomID = request.form['RoomId']
-    # end_date = request.form['end-date']
-    symbol = 'AAPL'
-    period = '1Y'
-    roomID = 'Room234'
-    end_date = str(datetime.date.today())
+    symbol = request.form['symbol']
+    period = request.form['periodLen']
+    roomID = request.form['RoomId']
+    end_date = request.form['end-date']
 
     SaveAllImages(symbol,end_date,period,roomID)
 
@@ -59,7 +55,6 @@ def get_stock_image():
     Stockblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' Stock')
     Stockblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png')
     expiration_date = datetime.date.today()+ relativedelta(days=2)
-    print(expiration_date)
     exp_date_Time = datetime.datetime(
         year=expiration_date.year, 
         month=expiration_date.month,
