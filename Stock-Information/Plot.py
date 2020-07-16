@@ -2,6 +2,7 @@ import IntrinsicValue
 import yfinance as yf
 import pandas as pd
 from datetime import date
+from dateutil.relativedelta import relativedelta
 import os
 import matplotlib.pyplot as plt
 

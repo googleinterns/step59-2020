@@ -2,6 +2,7 @@ import firebase_admin
 from flask import Flask, render_template, request
 from firebase_admin import credentials,firestore,storage
 from Plot import SaveAllImages
+from dateutil.relativedelta import relativedelta
 import requests
 import IntrinsicValue
 import yfinance as yf
@@ -33,12 +34,16 @@ end-date- The last date of the period in format 2017-08-10 00:00:00
 Returns:
 A success code and it uploads the image to firebase cloud storage.
 '''
-@app.route('/get-stock-image',methods=['POST'])
+@app.route('/get-stock-image',methods=['GET'])
 def get_stock_image():
-    symbol = request.form['symbol']
-    period = request.form['periodLen']
-    roomID = request.form['RoomId']
-    end_date = request.form['end-date']
+    # symbol = request.form['symbol']
+    # period = request.form['periodLen']
+    # roomID = request.form['RoomId']
+    # end_date = request.form['end-date']
+    symbol = 'AAPL'
+    period = '1Y'
+    roomID = 'Room234'
+    end_date = str(datetime.date.today())
 
     SaveAllImages(symbol,end_date,period,roomID)
 
@@ -53,13 +58,22 @@ def get_stock_image():
 
     Stockblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' Stock')
     Stockblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png')
-
-
+    expiration_date = datetime.date.today()+ relativedelta(days=2)
+    print(expiration_date)
+    exp_date_Time = datetime.datetime(
+        year=expiration_date.year, 
+        month=expiration_date.month,
+        day=expiration_date.day,
+    )
     img = {
-        'RSIpublic_image_url':RSIblob.public_url,
-        'MACDpublic_image_url':MACDblob.public_url,
-        'ADXpublic_image_url':ADXblob.public_url,
-        'Stockpublic_image_url':Stockblob.public_url,
+        'RSIpublic_image_url':RSIblob.generate_signed_url(expiration=exp_date_Time,
+                                 version='v4'),
+        'MACDpublic_image_url':MACDblob.generate_signed_url(expiration=exp_date_Time,
+                                 version='v4'),
+        'ADXpublic_image_url':ADXblob.generate_signed_url(expiration=exp_date_Time,
+                                 version='v4'),
+        'Stockpublic_image_url':Stockblob.generate_signed_url(expiration=exp_date_Time,
+                                 version='v4'),
     }
     db.collection('Rooms').document(roomID).collection('Symbol').document('RoomSymbols').collection(symbol).document('images').set(img)
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
@@ -89,8 +103,6 @@ def tech_indic():
 '''
 Params:
 Symbol-A string of the stock symbol
-type-A string giving the type of stock
-• Supports: Stock, Index, ETF, REIT
 interval- a string used to fetch data by interval (including intraday if period < 7 days)
 • valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
 • (optional, default is '1d')
