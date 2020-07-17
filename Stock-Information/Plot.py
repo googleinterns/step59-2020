@@ -95,6 +95,8 @@ Returns
 Nothing.Saves Image of all stock related images
 '''
 def SaveAllImages(symbol,end_date,period,roomID):
+    if symbol is None or end_date is None or period is None or roomID is None:
+        return "Incorrect paramaters"
     stock = yf.Ticker(symbol)
     data = stock.history(period=period,end = end_date, interval="1D")
     getADXImage(data,symbol,roomID,end_date)

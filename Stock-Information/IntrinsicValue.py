@@ -6,7 +6,7 @@ import os
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
-#Uncomment this when we start using earnings
+# Uncomment this when we start using earnings
 # from yahoo_earnings_calendar import YahooEarningsCalendar 
 '''
 We're using yfinance for this, because Finnhub does not offer dividends for free.
@@ -44,7 +44,7 @@ def getRSIList (data, time_window):
     data = data.Close
     diff = data.diff(1).dropna()        # diff in one field(one day)
 
-    #this preservers dimensions off diff values
+    # this preservers dimensions off diff values
     up_chg = 0 * diff
     down_chg = 0 * diff
     

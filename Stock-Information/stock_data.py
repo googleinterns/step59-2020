@@ -11,6 +11,7 @@ import numpy as np
 import json
 
 cred = credentials.Certificate("integrity-step-capstone-firebase-adminsdk-6oh0x-842f5d86d9.json")
+
 firebase_admin.initialize_app(cred,{
     'storageBucket': 'integrity-step-capstone.appspot.com'
 })
@@ -36,11 +37,10 @@ A success code and it uploads the image to firebase cloud storage.
 '''
 @app.route('/get-stock-image',methods=['POST'])
 def get_stock_image():
-    symbol = request.form['symbol']
+    symbol = request.form['symbol'] 
     period = request.form['periodLen']
     roomID = request.form['RoomId']
     end_date = request.form['end-date']
-
     SaveAllImages(symbol,end_date,period,roomID)
 
     RSIblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock')
@@ -70,8 +70,13 @@ def get_stock_image():
         'Stockpublic_image_url':Stockblob.generate_signed_url(expiration=exp_date_Time,
                                  version='v4'),
     }
-    db.collection('Rooms').document(roomID).collection('Symbol').document('RoomSymbols').collection(symbol).document('images').set(img)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps(img),
+        status=200,
+        mimetype='application/json'
+    )
+    db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
+    return response
 
 
 '''
@@ -92,36 +97,37 @@ def tech_indic():
     end_date = request.form['end-date']
     TechI = IntrinsicValue.getAllTechnicalIndicators(symbol,end_date,period)
     TechDict = TechI.to_dict(orient='index')
-    db.collection('Rooms').document(roomID).collection('Symbol').document('RoomSymbols').collection(symbol).document('technical-indicators').set(TechDict)
+    db.collection('Rooms').document(roomID).collection(symbol).document('technical-indicators').set(TechDict)
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
 
 '''
 Params:
 Symbol-A string of the stock symbol
-interval- a string used to fetch data by interval (including intraday if period < 7 days)
-• valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
-• (optional, default is '1d')
-period-use "period" instead of start/end
-• valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 roomId
 • The id of the room 
+End-date
+Ex:2006-06-15 00:00:00
 Response:
 It creates a json file of the corresponding data, or if the limit's been reached it will queue until the request gets data
 '''
-@app.route('/get-time-series',methods=['POST'])
+@app.route('/get-prices',methods=['POST'])
 def time_series():
     symbol = request.form['symbol']
-    period = request.form['periodLen']
     roomID = request.form['RoomId']
     end_date = request.form['end-date']
+    print("Symbol is " + symbol + " RoomId is " + roomID + "End_date is" + end_date)
     stock = yf.Ticker(symbol)
-    hist  = stock.history(period=period,end=end_date)
-    OpenLi = hist[['Close','Volume']]
-    indexes = OpenLi.index.values
-    valuesLi = OpenLi.values.tolist()
-    indexLi = [np.datetime_as_string(d,unit='m') for d in indexes]
-    TimeSeries = dict(zip(indexLi,valuesLi))
-    db.collection('Rooms').document(roomID).collection('Symbol').document('RoomSymbols').collection(symbol).document('time-series').set(TimeSeries)
+    print("End_Date is " +  end_date)
+    prices = []
+    for i in end_date:
+        hist  = stock.history(period="1D",end=i)
+        Close = hist[['Close']]
+        print("Close is  " + str(Close.values.tolist()[0][0]))
+        prices.append(Close.values.tolist()[0][0])
+    price = {
+        'prices': prices
+    }
+    db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
      
 if __name__ == '__main__':

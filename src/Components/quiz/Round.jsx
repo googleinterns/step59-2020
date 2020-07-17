@@ -4,10 +4,11 @@ import {Helmet} from 'react-helmet';
 import {firestore} from '../../firebase';
 import {getUserID} from '../../firebase';
 
-import {setUpRoom} from '../firestore-access';
+import {setUpRoom, getChartUrl, getTechnicalUrl} from '../firestore-access';
 import {getCurrentPrice} from '../firestore-access';
 import {advanceDay} from '../firestore-access';
 import {getDate} from '../firestore-access';
+import {DATES} from '../firestore-access';
 import {getUserShares} from '../firestore-access';
 import {makeInvestment} from '../firestore-access';
 import {getUserBalance} from '../firestore-access';
@@ -15,12 +16,15 @@ import {getUserBalance} from '../firestore-access';
 class Round extends React.Component {
 
     constructor (props) {
-        super(props);
+        super(props)
 
+        let symbol  = 'AAPL';
+        const roomID = setUpRoom(firestore, symbol, getUserID())
+        console.log("Constructor RoomId:" +  roomID)
         this.state = {
             chartURL: null,
             technicalIndicators: null,
-            roomID: setUpRoom(firestore, 'AAPL', getUserID()),
+            roomID: roomID ,
             currentCash: null,
             currentShares: null,
             currentPrice: null,
@@ -31,12 +35,17 @@ class Round extends React.Component {
     }
 
     async componentDidMount() {
+        const symbol = 'AAPL'
         const userID = getUserID();
-
+        const end = getDate(firestore,this.state.roomID)
+        const periodLen = '1Y'
+        console.log("Component RoomID " + this.state.roomID)
         this.setState({
+            technicalIndicators: await getTechnicalUrl(firestore,this.state.roomID,symbol,periodLen,end),
+            chartURL: await getChartUrl(firestore,this.state.roomID,symbol,periodLen,end),
             currentCash: await getUserBalance(firestore, this.state.roomID, userID),
             currentShares: await getUserShares(firestore, this.state.roomID, userID),
-            currentPrice: await getCurrentPrice(firestore, this.state.roomID),
+            currentPrice: await getCurrentPrice(firestore, symbol,this.state.roomID,DATES),
             userNumShares: (await getUserShares(firestore, this.state.roomID, userID)).length
         });
     }

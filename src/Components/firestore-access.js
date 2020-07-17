@@ -6,10 +6,10 @@ import "firebase/auth";
 import "firebase/firestore";
 
 const STARTING_MONEY = 10000;
-const DATES = ["03/01/2001", "06/01/2001", "09/01/2001"];
+export const DATES = ["2007-04-10 00:00:00", "2007-04-10 00:00:00", "2007-04-10 00:00:00"];
 
 export const setUpRoom = (db, symbol, userID) => {
-  const roomRef = db.collection('rooms').doc();
+  const roomRef = db.collection('Rooms').doc();
   const roomID = roomRef.id;
 
   // TODO: send POST request to get time series data for GOOG
@@ -42,7 +42,7 @@ export const setUpRoom = (db, symbol, userID) => {
 }
 
 export const getUserShares = async (db, roomID, userID) => {
-  const userRef = db.collection('rooms').doc(roomID)
+  const userRef = db.collection('Rooms').doc(roomID)
     .collection('users').doc(userID);
 
   const userDoc = await userRef.get();
@@ -51,12 +51,47 @@ export const getUserShares = async (db, roomID, userID) => {
 }
 
 export const getUserBalance = async (db, roomID, userID) => {
-  const userRef = db.collection('rooms').doc(roomID)
+  const userRef = db.collection('Rooms').doc(roomID)
     .collection('users').doc(userID);
 
   const userDoc = await userRef.get();
   const userData = userDoc.data();
   return userData.money_left;
+}
+export const getChartUrl = async(db,roomId,symbol,periodLen,endDate) =>{
+  var formData = new FormData();
+  formData.append('symbol',symbol);
+  formData.append('periodLen',periodLen)
+  formData.append('RoomId',roomId)
+  formData.append('end-date',endDate)
+
+  fetch('http://localhost:8080/get-stock-image', {
+      method: 'POST',
+      body: formData
+    })
+  .then(res => res.json())
+  .then((data) => {
+    return data['Stockpublic_image_url']
+  }).catch(function() {
+    console.log("error");
+  });
+}
+export const getTechnicalUrl = async(db,roomId,symbol,periodLen,endDate) =>{
+  var formData = new FormData();
+  formData.append('symbol',symbol);
+  formData.append('periodLen',periodLen)
+  formData.append('RoomId',roomId)
+  formData.append('end-date',endDate)
+  fetch('http://localhost:8080/get-stock-image', {
+      method: 'POST',
+      body: formData
+    })
+  .then(res => res.json())
+  .then((data) => {
+    return [data['RSIpublic_image_url'],data['MACDpublic_image_url'],data['ADXpublic_image_url']]
+  }).catch(function() {
+    console.log("error");
+  });
 }
 
 /*
@@ -66,16 +101,38 @@ export const requestTimeSeries = (symbol) => {
   const date = DATES[0]
 } */
 
-// TODO: update this once time_series data comes in
-// to actually get the price and not just the date
-export const getCurrentPrice = async (db, roomID) => {
-  const roomDoc = await db.collection('rooms').doc(roomID).get();
+export const getDate = async (db, roomID) => {
+  const roomDoc = await db.collection('Rooms').doc(roomID).get();
   const roomData = roomDoc.data();
   return roomData.dates[roomData.day_index];
 }
 
+// TODO: update this once time_series data comes in
+// to actually get the price and not just the date
+export const getCurrentPrice = async (db,symbol,roomID,endDates) => {
+  var formData = new FormData();
+  formData.append('symbol',symbol);
+  formData.append('RoomId',roomID);
+  formData.append('end-date',endDates);
+  fetch('http://localhost:8080/get-prices', {
+      method: 'POST',
+      body: formData
+    })
+  .then(res => res.json())
+  .then((data) => {
+  console.log(roomID + "RoomID")
+  const Price = db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices');
+  const priceData = Price.data();
+  db.collection('Rooms').doc(roomID).get().then((data) =>{
+    const roomData = data.data();
+    return priceData.prices[roomData.day_index];
+  }
+  );
+  })
+}
+
 export const advanceDay = async (db, roomID) => {
-  const roomRef = await db.collection('rooms').doc(roomID);
+  const roomRef = await db.collection('Rooms').doc(roomID);
   roomRef.update({
     day_index: firebase.firestore.FieldValue.increment(1)
   });
@@ -95,7 +152,7 @@ export const makeInvestment = (db, roomID, userID, symbol, price, num_shares) =>
   //const invObj = new Investment(symbol, price, num_shares);
   //const invJSON = invObj.to_dict();
   
-  const userRef = db.collection('rooms').doc(roomID)
+  const userRef = db.collection('Rooms').doc(roomID)
     .collection('users').doc(userID);
 
   const moneySpent = (price * num_shares) * -1;

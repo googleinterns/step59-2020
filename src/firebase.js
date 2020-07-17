@@ -18,7 +18,23 @@ firebase.initializeApp(firebaseConfig);
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
+
 const provider = new firebase.auth.GoogleAuthProvider();
 export const signInWithGoogle = () => {
   auth.signInWithPopup(provider);
 };
+
+// I added this not sure if it's already in you code but when I ran it , it didn't work until I added this.
+export const getUserID = () =>{
+  var user = firebase.auth().currentUser;
+  if (user != null) 
+  {
+    console.log("User UID is is " + user.uid)
+    return user.uid;
+  }
+  else
+  {
+    console.log("User is none")
+  }
+};
+
