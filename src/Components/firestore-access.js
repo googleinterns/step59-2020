@@ -164,7 +164,6 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
       symbols.push(Stock.data().Symbol)
     })
   }
-  console.log("Init Symbols, symbols List is " + symbols)
   return symbols
 }
 export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
