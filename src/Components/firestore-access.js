@@ -92,7 +92,7 @@ export const initDates = async (db, symbols, Rounds) => {
   let rand_startDate =  randomDate(startDate,endDate)
   let dates =[]
   let curr_date = rand_startDate
-  for(var i = 0; i < Rounds;i++){
+  for(var i = 0; i < Rounds; i++) {
     dates.push(curr_date.toISOString().substring(0, 10))
     curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
   }
