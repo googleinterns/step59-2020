@@ -250,11 +250,6 @@ export const makeInvestment = (db, roomID, userID, symbol, price, num_shares) =>
     //"total_purchase_price": price * num_shares
   }
 
-  console.log(JSON.stringify(invJSON));
-
-  //const invObj = new Investment(symbol, price, num_shares);
-  //const invJSON = invObj.to_dict();
-  
   const userRef = db.collection('Rooms').doc(roomID)
     .collection('users').doc(userID);
 
