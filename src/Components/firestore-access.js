@@ -70,7 +70,7 @@ function randomDate(start, end) {
 }
 
 // Minimum Period is 1Month
-export const initDates = async(db,symbols,Rounds)=>{
+export const initDates = async (db, symbols, Rounds) => {
   let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
     .where("Symbol","in",symbols).get()
   let IPOyearMax = 0
