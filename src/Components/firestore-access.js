@@ -90,7 +90,7 @@ export const initDates = async (db, symbols, Rounds) => {
   let startDate = new Date(IPOyearMax+1,1,1)
   let endDate =  new Date(IPOyearMax+1,1+random_period,1)
   let rand_startDate =  randomDate(startDate,endDate)
-  let dates =[]
+  let dates = []
   let curr_date = rand_startDate
   for(var i = 0; i < Rounds; i++) {
     dates.push(curr_date.toISOString().substring(0, 10))
