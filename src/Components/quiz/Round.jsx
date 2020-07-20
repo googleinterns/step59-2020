@@ -17,7 +17,6 @@ class Round extends React.Component {
 
     constructor (props) {
         super(props)
-        console.log("Props have " + this.props.location.state.roomID)
         this.state = {
             chartURL: null,
             technicalIndicators: null,
