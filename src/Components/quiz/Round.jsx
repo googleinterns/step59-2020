@@ -79,13 +79,6 @@ class Round extends React.Component {
     }
 
     render () {
-        /*let numShares = '';
-        if (this.state.userChoice) {
-            numShares = <input type='number'name='user-shares' />;
-        } else {
-            numShares = '';
-        } */
-
         return (
             <div>
                 <p className="price">The current price per share is ${this.state.currentPrice}</p>
