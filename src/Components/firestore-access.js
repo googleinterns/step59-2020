@@ -167,7 +167,8 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
   }
   return symbols
 }
-export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
+
+export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   var formData = new FormData();
   formData.append('symbol',JSON.stringify(symbols));
   formData.append('RoomId',roomId)
