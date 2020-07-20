@@ -215,12 +215,10 @@ export const getCurrentPrice = async (db,symbol,roomID) => {
       const data = await db.collection('Rooms').doc(roomID).get()
       const roomData = data.data();
       return priceData.prices[roomData.day_index];
-    }
-    catch(error){
+    } catch(error) {
       console.log("Error is " +  error)
     }
-  }
-  catch(error){
+  } catch(error){
     console.log("Error is " +  error)
   }
 }
