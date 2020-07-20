@@ -208,7 +208,7 @@ export const getDate = async (db, roomID) => {
 // TODO: update this once time_series data comes in
 // to actually get the price and not just the date
 export const getCurrentPrice = async (db,symbol,roomID) => {
-  try{
+  try {
     const Price = await db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices').get();
     const priceData = Price.data();
     try{
