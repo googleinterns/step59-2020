@@ -196,7 +196,6 @@ export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
 export const getSymbols = async (db,roomID) =>{
   const symbol = await db.collection('Rooms').doc(roomID).get();
   const symbolData = await symbol.data();
-  console.log("Get symbols should return " + symbolData.symbols)
   return symbolData.symbols;
 }
 
