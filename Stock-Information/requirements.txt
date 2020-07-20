@@ -24,6 +24,7 @@ finnhub-python==1.1.4
 firebase-admin==4.3.0
 flaky==3.6.1
 Flask==1.1.2
+Flask-Cors==3.0.8
 gcp-devrel-py-tools==0.0.15
 get-all-tickers==1.6
 gevent==20.6.2
