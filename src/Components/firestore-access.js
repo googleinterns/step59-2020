@@ -58,7 +58,7 @@ export const getChartUrl = async (db,roomId,symbol,endDate) =>{
   return imagesData["Stockpublic_image_url"][endDate]
 }
 
-export const getTechnicalUrl = async(db,roomId,symbol,endDate) =>{
+export const getTechnicalUrl = async (db, roomId, symbol, endDate) => {
   let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
   let imagesData = images.data();
   return imagesData["Stockpublic_image_url"][endDate]
