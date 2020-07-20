@@ -211,7 +211,7 @@ export const getCurrentPrice = async (db,symbol,roomID) => {
   try {
     const Price = await db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices').get();
     const priceData = Price.data();
-    try{
+    try {
       const data = await db.collection('Rooms').doc(roomID).get()
       const roomData = data.data();
       return priceData.prices[roomData.day_index];
