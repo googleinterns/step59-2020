@@ -28,11 +28,10 @@ export const getUserID = () =>{
   var user = firebase.auth().currentUser;
   if (user != null) 
   {
-    console.log("User UID is is " + user.uid)
     return user.uid;
   }
   else
   {
-    console.log("User is none")
+    throw "Null User"
   }
 };
