@@ -3,9 +3,14 @@ import json
 import webbrowser
 import os
 import time
+import math
 from pathlib import Path
+from dateutil.relativedelta import relativedelta
+import datetime
 from firebase_admin import credentials,firestore
+from random import randrange
 import firebase_admin
+import numpy as np
 
 
 
@@ -47,31 +52,91 @@ os.remove(path +"/companylist.csv")
 StockEx = NASDAQ.append(NYSE)
 
 Industry =  StockEx['industry'].drop_duplicates().reset_index(drop=True)
-Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True).to_dict()
-Stock = StockEx.drop_duplicates().reset_index(drop=True).to_dict(orient='index')
+Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True)
 
 
 
 
-db.collection('Ticker-Info').document('Industry').set({str(k):v for (k,v) in Industry.items()})
-db.collection('Ticker-Info').document('Sector').set({str(k):v for (k,v) in Sector.items()})
+Stock = StockEx.drop_duplicates()
+Stock['IPOyear'].fillna(1972)
+IPOCutoff = datetime.date.today() - relativedelta(years=3)
+Stock =  Stock[Stock.IPOyear <= IPOCutoff.year]
+StockD =  Stock.reset_index(drop=True).to_dict(orient='index')
 
-Stock = {str(k):v for (k,v) in Stock.items()}
 
-for Info in Stock.values():
-    NewD = {
-        Info['Symbol']:
-        {
-            'Name': Info['Name'], 
-            'LastSale': Info['LastSale'],
-            'MarketCap': Info['MarketCap'],
-            'IPOyear': Info['IPOyear'],
-            'Sector': Info['Sector'],
-            'industry': Info['industry'], 
-            'Summary Quote': Info['Summary Quote']
+
+
+
+    
+StockD = {str(k):v for (k,v) in StockD.items()}
+StockV = StockD.values()
+i = 0
+random_pos = range(len(StockV))
+curr_len = len(random_pos)
+
+IndustryList = Industry.values.tolist()
+SectorList = Sector.values.tolist()
+
+
+IndD ={}
+SectorD = {}
+curr_IndL = {}
+curr_SectorL = {}
+
+for ind in IndustryList:
+    stocks = Stock[Stock.industry == ind]
+    if stocks.empty is not True:
+        IndD[ind] = range(len(stocks.index))
+        curr_IndL[ind] = len(IndD[ind])
+
+for sect in SectorList:
+    stocks = Stock[Stock.Sector == sect]
+    if stocks.empty is not True:
+        SectorD[sect] = range(len(stocks.index))
+        curr_SectorL[sect] = len(SectorD[sect])
+
+StocksD = {
+    "NumOfStocks": curr_len,
+}
+
+
+IndD.pop(np.nan,None)
+SectorD.pop(np.nan,None)
+curr_IndL.pop(np.nan, None)
+curr_SectorL.pop(np.nan,None)
+
+IndDocument = {
+    "Industry":curr_IndL
+}
+SectorDocument ={
+    "Sector":curr_SectorL
+}
+db.collection('Ticker-Info').document('Industry').set(IndDocument)
+db.collection('Ticker-Info').document('Sector').set(SectorDocument)
+db.collection('Ticker-Info').document('Stock').set(StocksD)
+
+for Info in StockV:
+        NewD = {
+                'Symbol': Info['Symbol'],
+                'Name': Info['Name'], 
+                'LastSale': Info['LastSale'],
+                'MarketCap': Info['MarketCap'],
+                'IPOyear': Info['IPOyear'],
+                'Sector': Info['Sector'],
+                'industry': Info['industry'], 
+                'Summary Quote': Info['Summary Quote'],
+                'RandomPos' :random_pos[randrange(curr_len)],
+                'IndustryPos': -1 if Info['industry'] is np.nan or Stock[Stock.industry == Info['industry']].empty else IndD[Info['industry']][randrange(curr_IndL[Info['industry']])],
+                'SectorPos' : -1 if Info['Sector'] is np.nan or Stock[Stock.Sector == Info['Sector']].empty else SectorD[Info['Sector']][randrange(curr_SectorL[Info['Sector']])]
         }
-    }
-    db.collection('Ticker-Info').document('Stock').collection('Stocks').document(Info['Symbol']).set(NewD)
+        db.collection('Ticker-Info').document('Stock').collection('Stocks').document(Info['Symbol']).set(NewD)
+        i+=1
+        curr_len-=1
+        if Info['industry'] is not np.nan:
+            curr_IndL[Info['industry']]-=1 
+        if Info['Sector'] is not np.nan:
+            curr_SectorL[Info['Sector']]-=1
+        print(str(i)+ "\\" + str(len(StockV)) + ":" + Info['Symbol'] +" has been added to the database with IPO year " +  str(Info['IPOyear']))
 
 
 

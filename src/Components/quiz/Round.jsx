@@ -4,7 +4,7 @@ import {Helmet} from 'react-helmet';
 import {firestore} from '../../firebase';
 import {getUserID} from '../../firebase';
 
-import {setUpRoom, getChartUrl, getTechnicalUrl} from '../firestore-access';
+import {getChartUrl, getTechnicalUrl,getSymbols} from '../firestore-access';
 import {getCurrentPrice} from '../firestore-access';
 import {advanceDay} from '../firestore-access';
 import {getDate} from '../firestore-access';
@@ -17,35 +17,37 @@ class Round extends React.Component {
 
     constructor (props) {
         super(props)
-
-        let symbol  = 'AAPL';
-        const roomID = setUpRoom(firestore, symbol, getUserID())
-        console.log("Constructor RoomId:" +  roomID)
+        console.log("Props have " + this.props.location.state.roomID)
         this.state = {
             chartURL: null,
             technicalIndicators: null,
-            roomID: roomID ,
+            roomID: this.props.location.state.roomID,
             currentCash: null,
             currentShares: null,
             currentPrice: null,
             userChoice: null,
-            userNumShares: null
+            userNumShares: null,
+            currSymbol: null,
             //leaderboard: null,
         }
     }
 
     async componentDidMount() {
-        const symbol = 'AAPL'
+        console.log("RoomID is " + this.state.roomID)
+        
         const userID = getUserID();
-        const end = getDate(firestore,this.state.roomID)
-        const periodLen = '1Y'
-        console.log("Component RoomID " + this.state.roomID)
+        const end  = getDate(firestore,this.state.roomID);
+        const symbols = await getSymbols(firestore,this.state.roomID)
+        let symbol = symbols[0]
         this.setState({
-            technicalIndicators: await getTechnicalUrl(firestore,this.state.roomID,symbol,periodLen,end),
-            chartURL: await getChartUrl(firestore,this.state.roomID,symbol,periodLen,end),
+            currSymbol: symbol
+        })
+        this.setState({
+            technicalIndicators: await getTechnicalUrl(firestore,this.state.roomID,symbol,end) ,
+            chartURL: await getChartUrl(firestore,this.state.roomID,symbol,end),
             currentCash: await getUserBalance(firestore, this.state.roomID, userID),
             currentShares: await getUserShares(firestore, this.state.roomID, userID),
-            currentPrice: await getCurrentPrice(firestore, symbol,this.state.roomID,DATES),
+            currentPrice: await getCurrentPrice(firestore, symbol,this.state.roomID),
             userNumShares: (await getUserShares(firestore, this.state.roomID, userID)).length
         });
     }
@@ -63,10 +65,17 @@ class Round extends React.Component {
     } 
 
     submitHandler = (event) => {
-      event.preventDefault(); // prevent page refresh
+      event.preventDefault(); // prevent page 
       // make the investment
-      makeInvestment(firestore, this.state.roomID, getUserID(), "AAPL", 100, 3/*event.target.value*/);
-      alert("recorded the investment");
+      makeInvestment(firestore, this.state.roomID, getUserID(), this.state.currSymbol, 100, 3/*event.target.value*/);
+      if(advanceDay(firestore,this.state.roomID))
+      {
+        alert("recorded the investment");
+      }
+      else
+      {
+        alert("Game is finished.")
+      }
     }
 
     render () {

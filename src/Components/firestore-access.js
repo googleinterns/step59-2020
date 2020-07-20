@@ -6,22 +6,28 @@ import "firebase/auth";
 import "firebase/firestore";
 
 const STARTING_MONEY = 10000;
-export const DATES = ["2007-04-10 00:00:00", "2007-04-10 00:00:00", "2007-04-10 00:00:00"];
 
-export const setUpRoom = (db, symbol, userID) => {
-  const roomRef = db.collection('Rooms').doc();
+export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
+  const roomRef = await db.collection('Rooms').doc();
   const roomID = roomRef.id;
 
   // TODO: send POST request to get time series data for GOOG
   // for prototype, hard-code 3 points in time
+  const symbolsL = await initSymbols(db,null,null,NumOfSymbols)
+  console.log("Symbol List is  " + symbolsL)
+  const datesD = await initDates(db,symbolsL,Rounds)
   roomRef.set({
+    symbols: symbolsL,
     day_index: 0,
-    dates: DATES
+    dates: datesD["dates"]
   });
+  
+  await initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"])
 
   const usersRef = roomRef.collection('users');
-  roomRef.collection('AAPL');
   const userRef = usersRef.doc(userID);
+  console.log("SetUp room was called")
+
 
   const gameInfo = {
     investments: [],
@@ -29,15 +35,8 @@ export const setUpRoom = (db, symbol, userID) => {
     money_left: STARTING_MONEY,
     gains: 0,
     losses: 0,
-    //roomID: roomID
   }
-
   fetch(userRef.set(gameInfo));
-  /*
-  const symbolRef = roomRef.collection(symbol);
-  const ts = symbolRef.doc('time_series');
-  const ti = symbolRef.doc('technical_indicators'); */
-
   return roomID;
 }
 
@@ -58,48 +57,166 @@ export const getUserBalance = async (db, roomID, userID) => {
   const userData = userDoc.data();
   return userData.money_left;
 }
-export const getChartUrl = async(db,roomId,symbol,periodLen,endDate) =>{
-  var formData = new FormData();
-  formData.append('symbol',symbol);
-  formData.append('periodLen',periodLen)
-  formData.append('RoomId',roomId)
-  formData.append('end-date',endDate)
 
-  fetch('http://localhost:8080/get-stock-image', {
-      method: 'POST',
-      body: formData
-    })
-  .then(res => res.json())
-  .then((data) => {
-    return data['Stockpublic_image_url']
-  }).catch(function() {
-    console.log("error");
-  });
+export const getChartUrl = async(db,roomId,symbol,endDate) =>{
+  let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
+  let imagesData = images.data();
+  return imagesData["Stockpublic_image_url"][endDate]
 }
-export const getTechnicalUrl = async(db,roomId,symbol,periodLen,endDate) =>{
-  var formData = new FormData();
-  formData.append('symbol',symbol);
-  formData.append('periodLen',periodLen)
-  formData.append('RoomId',roomId)
-  formData.append('end-date',endDate)
-  fetch('http://localhost:8080/get-stock-image', {
-      method: 'POST',
-      body: formData
-    })
-  .then(res => res.json())
-  .then((data) => {
-    return [data['RSIpublic_image_url'],data['MACDpublic_image_url'],data['ADXpublic_image_url']]
-  }).catch(function() {
-    console.log("error");
-  });
+export const getTechnicalUrl = async(db,roomId,symbol,endDate) =>{
+  let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
+  let imagesData = images.data();
+  return imagesData["Stockpublic_image_url"][endDate]
+}
+function randomDate(start, end) {
+  var date = new Date(+start + Math.random() * (end - start));
+  return date;
+}
+// Minimum Period is 1Month
+export const initDates = async(db,symbols,Rounds)=>{
+  let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+    .where("Symbol","in",symbols).get()
+  let IPOyearMax = 0
+  let today = new Date();
+  let year = today.getFullYear();
+  Stocks.forEach(function(Stock){
+      if (IPOyearMax < Stock.data().IPOyear)
+      {
+        IPOyearMax = Stock.data().IPOyear
+      }
+  })
+  console.log("IPOYear Max is " + IPOyearMax)
+  // No more than 7 rounds(Periods are measured in months)
+  let min_window_size = 3
+  let yearDiff = year - (IPOyearMax+1)
+  let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds)
+  let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size))+min_window_size)
+  let startDate = new Date(IPOyearMax+1,1,1)
+  let endDate =  new Date(IPOyearMax+1,1+random_period,1)
+  let rand_startDate =  randomDate(startDate,endDate)
+  let dates =[]
+  let curr_date = rand_startDate
+  for(var i = 0; i < Rounds;i++)
+  {
+    dates.push(curr_date.toISOString().substring(0, 10))
+    curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
+  }
+  console.log("Dates are " + dates)
+  const datesD ={
+    "dates" : dates,
+    "period": random_period
+  }
+  return datesD
 }
 
-/*
-// TODO: request the time series via HTTP POST request
-export const requestTimeSeries = (symbol) => {
-  
-  const date = DATES[0]
-} */
+export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
+  let symbols = []
+  if(Sector !== null && Industry !== null)
+  {
+    let formData = new FormData();
+    formData.append('Industry',Industry);
+    formData.append('Sector',Sector)
+    formData.append('NumOfSymbols',NumOfSymbols)
+    try
+    {
+      let response = await fetch('http://localhost:8080/get-symbols', {
+        method: 'POST',
+        mode: 'cors',
+        body: formData
+      })
+      let symbolJson = await response.json()
+      if (symbolJson.hasOwnProperty("Error"))
+      {
+        console.log("No Symbols for your query")
+        return symbols
+      }
+      symbols = symbolJson['symbols']
+    }
+    catch(error)
+    {
+      console.log("Error with Query: " + error)
+    }
+  }
+  else if(Industry !== null)
+  {
+    let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
+    let numOfIndustries= IndustryInfo.data().Industry[Industry];
+    let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
+    let Industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+    .where("Industry","==",Industry)
+    .where("IndustryPos","<=", cutoff)
+    .orderBy("IndustryPos").limit(NumOfSymbols).get()
+    Industries.forEach(function(doc){
+      symbols.push(doc.data().Symbol)
+    })
+  }
+  else if(Sector !== null)
+  {
+    let SectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
+    let numOfSectors= SectorInfo.data().Sector[Sector];
+    let cutoff = Math.floor((Math.random()  * (numOfSectors - NumOfSymbols))+NumOfSymbols);
+    let Sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+    .where("Sector","==",Sector)
+    .where("SectorPos","<=", cutoff)
+    .orderBy("SectorPos").limit(NumOfSymbols).get()
+    Sectors.forEach(function(doc){
+      symbols.push(doc.data().Symbol)
+    })
+  }
+  else
+  {
+    let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
+    let numOfStocks = StockInfo.data().NumOfStocks - 1;
+    let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
+    console.log("Random Cutoff:" + cutoff)
+    let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+    .where("RandomPos",">=", cutoff)
+    .orderBy("RandomPos").limit(NumOfSymbols).get()
+    Stocks.forEach(function(Stock){
+      console.log("Stock Data:" + Stock.data())
+      symbols.push(Stock.data().Symbol)
+    })
+  }
+  console.log("Init Symbols, symbols List is " + symbols)
+  return symbols
+}
+export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
+  var formData = new FormData();
+  formData.append('symbol',JSON.stringify(symbols));
+  formData.append('RoomId',roomId)
+  formData.append('end-date',JSON.stringify(endDates));
+  try
+  {
+    await fetch('http://localhost:8080/get-prices', {
+        method: 'POST',
+        mode: 'cors',
+        body: formData
+    })
+  }
+  catch(err) 
+  {
+    console.log("Error is " +  err)
+  }
+  formData.append('periodLen',periodLen)
+  try
+  {
+    await fetch('http://localhost:8080/get-stock-image', {
+        method: 'POST',
+        mode: 'cors',
+        body: formData
+    })
+  }
+  catch(error)
+  {
+    console.log("Error is " +  error)
+  }
+}
+export const getSymbols = async (db,roomID) =>{
+  const symbol = await db.collection('Rooms').doc(roomID).get();
+  const symbolData = await symbol.data();
+  console.log("Get symbols should return " + symbolData.symbols)
+  return symbolData.symbols;
+}
 
 export const getDate = async (db, roomID) => {
   const roomDoc = await db.collection('Rooms').doc(roomID).get();
@@ -109,33 +226,44 @@ export const getDate = async (db, roomID) => {
 
 // TODO: update this once time_series data comes in
 // to actually get the price and not just the date
-export const getCurrentPrice = async (db,symbol,roomID,endDates) => {
-  var formData = new FormData();
-  formData.append('symbol',symbol);
-  formData.append('RoomId',roomID);
-  formData.append('end-date',endDates);
-  fetch('http://localhost:8080/get-prices', {
-      method: 'POST',
-      body: formData
-    })
-  .then(res => res.json())
-  .then((data) => {
-  console.log(roomID + "RoomID")
-  const Price = db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices');
-  const priceData = Price.data();
-  db.collection('Rooms').doc(roomID).get().then((data) =>{
-    const roomData = data.data();
-    return priceData.prices[roomData.day_index];
+export const getCurrentPrice = async (db,symbol,roomID) => {
+  try
+  {
+    const Price = await db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices').get();
+    const priceData = Price.data();
+    try
+    {
+      const data = await db.collection('Rooms').doc(roomID).get()
+      const roomData = data.data();
+      return priceData.prices[roomData.day_index];
+    }
+    catch(error)
+    {
+      console.log("Error is " +  error)
+    }
   }
-  );
-  })
+  catch(error)
+  {
+    console.log("Error is " +  error)
+  }
 }
 
 export const advanceDay = async (db, roomID) => {
   const roomRef = await db.collection('Rooms').doc(roomID);
-  roomRef.update({
-    day_index: firebase.firestore.FieldValue.increment(1)
-  });
+  const data = await roomRef.get();
+  const roomData = data.data();
+  if(roomData.day_index < roomData.dates.length)
+  {
+    roomRef.update({
+      day_index: firebase.firestore.FieldValue.increment(1)
+    });
+    return 1
+  }
+  else
+  {
+    console.log("Game is finished.")
+    return 0;
+  }
 }
 
 export const makeInvestment = (db, roomID, userID, symbol, price, num_shares) => {

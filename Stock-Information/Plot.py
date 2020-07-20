@@ -1,7 +1,7 @@
 import IntrinsicValue
 import yfinance as yf
 import pandas as pd
-from datetime import date
+from datetime import date,datetime
 from dateutil.relativedelta import relativedelta
 import os
 import matplotlib.pyplot as plt
@@ -80,10 +80,16 @@ def getRSIImage(data,symbol,roomID,end_date):
     StockPlot['Oversold'] = 30
     cols = ['RSI','Overbought','Oversold']
     colors = ['black','green','red']
-    print(StockPlot)
     StockPlot[cols].plot(color=colors)
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png'
     plt.savefig(name)
+def splitMonths(months):
+    if months <= 12:
+        return (0,months)
+    else:
+        new_months = months % 12
+        years = int((months-new_months)/12)
+        return (years,new_months)
 '''
 Paramaters: 
 Data-A pandas dataframe of the closing data for the symbol stock.
@@ -98,7 +104,10 @@ def SaveAllImages(symbol,end_date,period,roomID):
     if symbol is None or end_date is None or period is None or roomID is None:
         return "Incorrect paramaters"
     stock = yf.Ticker(symbol)
-    data = stock.history(period=period,end = end_date, interval="1D")
+    date_time_obj = datetime.strptime(end_date, '%Y-%m-%d')
+    new_years,new_months = splitMonths(period)
+    start_date = date_time_obj + relativedelta(months=-new_months,years=-new_years)
+    data = stock.history(end=end_date,start=start_date, interval="1D")
     getADXImage(data,symbol,roomID,end_date)
     getMACDImage(data,symbol,roomID,end_date)
     getRSIImage(data,symbol,roomID,end_date)

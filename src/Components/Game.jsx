@@ -6,7 +6,7 @@ import {BrowserRouter as Router, Route} from 'react-router-dom';
 
 
 import Home from './Home';
-import GameLobby from './quiz/Lobby.js';
+import GameLobby from './quiz/Lobby';
 import Round from './quiz/Round';
 import SignIn from "./authenticate/SignIn";
 import SignUp from "./authenticate/SignUp";

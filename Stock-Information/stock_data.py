@@ -1,5 +1,6 @@
 import firebase_admin
 from flask import Flask, render_template, request
+from flask_cors import CORS
 from firebase_admin import credentials,firestore,storage
 from Plot import SaveAllImages
 from dateutil.relativedelta import relativedelta
@@ -7,6 +8,7 @@ import requests
 import IntrinsicValue
 import yfinance as yf
 import datetime
+import random
 import numpy as np
 import json
 
@@ -19,9 +21,10 @@ firebase_admin.initialize_app(cred,{
 firebase_request_adapter = requests.Request()
 
 app = Flask(__name__)
-app.secret_key = """Xyeo\x06\x97\xc7\xf7\x1c\x84\xcd\x04\x1e\x07`]\x1fA\x83-\x1e#\xeb@"""
+app.secret_key =
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
+CORS(app)
 db = firestore.client()
 bucket = storage.bucket()
 
@@ -37,47 +40,88 @@ A success code and it uploads the image to firebase cloud storage.
 '''
 @app.route('/get-stock-image',methods=['POST'])
 def get_stock_image():
-    symbol = request.form['symbol'] 
+    print(request.form)
+    symbols = json.loads(request.form['symbol'],encoding="utf-8")
     period = request.form['periodLen']
     roomID = request.form['RoomId']
-    end_date = request.form['end-date']
-    SaveAllImages(symbol,end_date,period,roomID)
+    end_dates = json.loads(request.form['end-date'],encoding="utf-8")
+    img  ={}
+    RSIDict = {}
+    MACDDict = {}
+    ADXDict = {}
+    StockDict = {}
+    for symbol in symbols:
+        for end_date in end_dates:
+            SaveAllImages(symbol,end_date,int(period),roomID)
 
-    RSIblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock')
-    RSIblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png')
+            expiration_date = datetime.date.today()+ relativedelta(days=2)
+            exp_date_Time = datetime.datetime(
+                year=expiration_date.year, 
+                month=expiration_date.month,
+                day=expiration_date.day,
+            )
 
-    MACDblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock')
-    MACDblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock.png')
+            RSIblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock')
+            RSIblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png')
+            RSIDict[end_date] = RSIblob.generate_signed_url(expiration=exp_date_Time,
+                                        version='v4')
 
-    ADXblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' ADX Stock')
-    ADXblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' ADX Stock.png')
+            MACDblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock')
+            MACDblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock.png')
+            MACDDict[end_date] = MACDblob.generate_signed_url(expiration=exp_date_Time,
+                                        version='v4')
 
-    Stockblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' Stock')
-    Stockblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png')
-    expiration_date = datetime.date.today()+ relativedelta(days=2)
-    exp_date_Time = datetime.datetime(
-        year=expiration_date.year, 
-        month=expiration_date.month,
-        day=expiration_date.day,
-    )
-    img = {
-        'RSIpublic_image_url':RSIblob.generate_signed_url(expiration=exp_date_Time,
-                                 version='v4'),
-        'MACDpublic_image_url':MACDblob.generate_signed_url(expiration=exp_date_Time,
-                                 version='v4'),
-        'ADXpublic_image_url':ADXblob.generate_signed_url(expiration=exp_date_Time,
-                                 version='v4'),
-        'Stockpublic_image_url':Stockblob.generate_signed_url(expiration=exp_date_Time,
-                                 version='v4'),
-    }
+            ADXblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' ADX Stock')
+            ADXblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' ADX Stock.png')
+            ADXDict[end_date] = ADXblob.generate_signed_url(expiration=exp_date_Time,
+                                        version='v4')
+
+            Stockblob = bucket.blob(symbol + ' ' + roomID + ' ' +end_date + ' Stock')
+            Stockblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png')
+            StockDict[end_date] = Stockblob.generate_signed_url(expiration=exp_date_Time,
+                                        version='v4')
+    
+            img = {
+                    'RSIpublic_image_url':RSIDict,
+                    'MACDpublic_image_url':MACDDict,
+                    'ADXpublic_image_url':ADXDict,
+                    'Stockpublic_image_url':StockDict,
+            }
+            db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+
+@app.route('/get-symbols',methods=['POST'])
+def get_symbols():
+    Industry = request.form['Industry']
+    Sector = request.form['Sector']
+    Num_of_Symbols = request.form['NumOfSymbols']
+    IndSect = db.collection("Ticker-Info").doc("Stock").collection("Stocks").where("Industry","==",Industry) \
+    .where("Sector","==", Sector).stream()
+    num_of_stocks = 0
+    symbols = []
+    for stock in IndSect:
+        num_of_stocks+=1
+        symbols.append(stock.to_dict()['Stock Data']['Symbol'])
+    responseD ={}
+    if num_of_stocks == 0:
+         responseD = {
+            "Error":"No Symbols match the query"
+        }
+    elif num_of_stocks < Num_of_Symbols:
+        responseD = {
+            "symbols": symbols
+        }
+    else:
+        responseD = {
+            "symbols": random.choices(symbols,k=Num_of_Symbols)
+        }
     response = app.response_class(
-        response=json.dumps(img),
+        response=json.dumps(responseD),
         status=200,
         mimetype='application/json'
     )
-    db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
     return response
-
+    
 
 '''
 Params:
@@ -112,22 +156,20 @@ It creates a json file of the corresponding data, or if the limit's been reached
 '''
 @app.route('/get-prices',methods=['POST'])
 def time_series():
-    symbol = request.form['symbol']
+    symbols = json.loads(request.form['symbol'],encoding="utf-8")
     roomID = request.form['RoomId']
-    end_date = request.form['end-date']
-    print("Symbol is " + symbol + " RoomId is " + roomID + "End_date is" + end_date)
-    stock = yf.Ticker(symbol)
-    print("End_Date is " +  end_date)
-    prices = []
-    for i in end_date:
-        hist  = stock.history(period="1D",end=i)
-        Close = hist[['Close']]
-        print("Close is  " + str(Close.values.tolist()[0][0]))
-        prices.append(Close.values.tolist()[0][0])
-    price = {
-        'prices': prices
-    }
-    db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
+    end_dates = json.loads(request.form['end-date'],encoding="utf-8")
+    for symbol in symbols:
+        stock = yf.Ticker(symbol)
+        prices = []
+        for i in end_dates:
+            hist  = stock.history(period="1D",start=i)
+            Close = hist[['Close']]
+            prices.append(Close.values.tolist()[0][0])
+        price = {
+            'prices': prices
+        }
+        db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
      
 if __name__ == '__main__':
