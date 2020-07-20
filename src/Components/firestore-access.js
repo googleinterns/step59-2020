@@ -1,6 +1,3 @@
-'use strict';
-
-//import Investment from './investment';
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
@@ -11,8 +8,6 @@ export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
   const roomRef = await db.collection('Rooms').doc();
   const roomID = roomRef.id;
 
-  // TODO: send POST request to get time series data for GOOG
-  // for prototype, hard-code 3 points in time
   const symbolsL = await initSymbols(db,null,null,NumOfSymbols)
   console.log("Symbol List is  " + symbolsL)
   const datesD = await initDates(db,symbolsL,Rounds)
@@ -36,7 +31,7 @@ export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
     gains: 0,
     losses: 0,
   }
-  fetch(userRef.set(gameInfo));
+  await fetch(userRef.set(gameInfo));
   return roomID;
 }
 
@@ -63,15 +58,18 @@ export const getChartUrl = async(db,roomId,symbol,endDate) =>{
   let imagesData = images.data();
   return imagesData["Stockpublic_image_url"][endDate]
 }
+
 export const getTechnicalUrl = async(db,roomId,symbol,endDate) =>{
   let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
   let imagesData = images.data();
   return imagesData["Stockpublic_image_url"][endDate]
 }
+
 function randomDate(start, end) {
   var date = new Date(+start + Math.random() * (end - start));
   return date;
 }
+
 // Minimum Period is 1Month
 export const initDates = async(db,symbols,Rounds)=>{
   let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")

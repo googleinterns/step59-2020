@@ -117,17 +117,17 @@ db.collection('Ticker-Info').document('Stock').set(StocksD)
 
 for Info in StockV:
         NewD = {
-                'Symbol': Info['Symbol'],
-                'Name': Info['Name'], 
-                'LastSale': Info['LastSale'],
-                'MarketCap': Info['MarketCap'],
-                'IPOyear': Info['IPOyear'],
-                'Sector': Info['Sector'],
-                'industry': Info['industry'], 
-                'Summary Quote': Info['Summary Quote'],
-                'RandomPos' :random_pos[randrange(curr_len)],
-                'IndustryPos': -1 if Info['industry'] is np.nan or Stock[Stock.industry == Info['industry']].empty else IndD[Info['industry']][randrange(curr_IndL[Info['industry']])],
-                'SectorPos' : -1 if Info['Sector'] is np.nan or Stock[Stock.Sector == Info['Sector']].empty else SectorD[Info['Sector']][randrange(curr_SectorL[Info['Sector']])]
+            'Symbol': Info['Symbol'],
+            'Name': Info['Name'], 
+            'LastSale': Info['LastSale'],
+            'MarketCap': Info['MarketCap'],
+            'IPOyear': Info['IPOyear'],
+            'Sector': Info['Sector'],
+            'industry': Info['industry'], 
+            'Summary Quote': Info['Summary Quote'],
+            'RandomPos' :random_pos[randrange(curr_len)],
+            'IndustryPos': -1 if Info['industry'] is np.nan or Stock[Stock.industry == Info['industry']].empty else IndD[Info['industry']][randrange(curr_IndL[Info['industry']])],
+            'SectorPos' : -1 if Info['Sector'] is np.nan or Stock[Stock.Sector == Info['Sector']].empty else SectorD[Info['Sector']][randrange(curr_SectorL[Info['Sector']])]
         }
         db.collection('Ticker-Info').document('Stock').collection('Stocks').document(Info['Symbol']).set(NewD)
         i+=1

@@ -40,7 +40,6 @@ A success code and it uploads the image to firebase cloud storage.
 '''
 @app.route('/get-stock-image',methods=['POST'])
 def get_stock_image():
-    print(request.form)
     symbols = json.loads(request.form['symbol'],encoding="utf-8")
     period = request.form['periodLen']
     roomID = request.form['RoomId']
@@ -95,6 +94,7 @@ def get_symbols():
     Industry = request.form['Industry']
     Sector = request.form['Sector']
     Num_of_Symbols = request.form['NumOfSymbols']
+
     IndSect = db.collection("Ticker-Info").doc("Stock").collection("Stocks").where("Industry","==",Industry) \
     .where("Sector","==", Sector).stream()
     num_of_stocks = 0
@@ -102,6 +102,7 @@ def get_symbols():
     for stock in IndSect:
         num_of_stocks+=1
         symbols.append(stock.to_dict()['Stock Data']['Symbol'])
+
     responseD ={}
     if num_of_stocks == 0:
          responseD = {
@@ -115,6 +116,7 @@ def get_symbols():
         responseD = {
             "symbols": random.choices(symbols,k=Num_of_Symbols)
         }
+        
     response = app.response_class(
         response=json.dumps(responseD),
         status=200,
