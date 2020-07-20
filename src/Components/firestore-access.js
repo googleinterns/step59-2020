@@ -9,7 +9,6 @@ export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
   const roomID = roomRef.id;
 
   const symbolsL = await initSymbols(db,null,null,NumOfSymbols)
-  console.log("Symbol List is  " + symbolsL)
   const datesD = await initDates(db,symbolsL,Rounds)
   roomRef.set({
     symbols: symbolsL,
@@ -53,7 +52,7 @@ export const getUserBalance = async (db, roomID, userID) => {
   return userData.money_left;
 }
 
-export const getChartUrl = async(db,roomId,symbol,endDate) =>{
+export const getChartUrl = async (db,roomId,symbol,endDate) =>{
   let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
   let imagesData = images.data();
   return imagesData["Stockpublic_image_url"][endDate]
@@ -83,7 +82,6 @@ export const initDates = async(db,symbols,Rounds)=>{
         IPOyearMax = Stock.data().IPOyear
       }
   })
-  console.log("IPOYear Max is " + IPOyearMax)
   // No more than 7 rounds(Periods are measured in months)
   let min_window_size = 3
   let yearDiff = year - (IPOyearMax+1)

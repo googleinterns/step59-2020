@@ -24,7 +24,6 @@ export const signInWithGoogle = () => {
   auth.signInWithPopup(provider);
 };
 
-// I added this not sure if it's already in you code but when I ran it , it didn't work until I added this.
 export const getUserID = () =>{
   var user = firebase.auth().currentUser;
   if (user != null) 
@@ -37,4 +36,3 @@ export const getUserID = () =>{
     console.log("User is none")
   }
 };
-
