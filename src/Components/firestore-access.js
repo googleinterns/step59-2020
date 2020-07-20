@@ -80,7 +80,8 @@ export const initDates = async (db, symbols, Rounds) => {
       if (IPOyearMax < Stock.data().IPOyear){
         IPOyearMax = Stock.data().IPOyear
       }
-  })
+  });
+  
   // No more than 7 rounds(Periods are measured in months)
   let min_window_size = 3
   let yearDiff = year - (IPOyearMax+1)
