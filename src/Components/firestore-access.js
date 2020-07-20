@@ -247,7 +247,7 @@ export const makeInvestment = (db, roomID, userID, symbol, price, num_shares) =>
     "symbol": symbol,
     "share_price": price,
     "num_shares": num_shares,
-    //"total_purchase_price": price * num_shares
+    "total_purchase_price": (price * num_shares)
   }
 
   const userRef = db.collection('Rooms').doc(roomID)
