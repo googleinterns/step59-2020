@@ -54,9 +54,6 @@ StockEx = NASDAQ.append(NYSE)
 Industry =  StockEx['industry'].drop_duplicates().reset_index(drop=True)
 Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True)
 
-
-
-
 Stock = StockEx.drop_duplicates()
 Stock['IPOyear'].fillna(1972)
 IPOCutoff = datetime.date.today() - relativedelta(years=3)
@@ -132,6 +129,5 @@ for Info in StockV:
         if Info['Sector'] is not np.nan:
             curr_SectorL[Info['Sector']]-=1
         print(str(i)+ "\\" + str(len(StockV)) + ":" + Info['Symbol'] +" has been added to the database with IPO year " +  str(Info['IPOyear']))
-
 
 
