@@ -96,7 +96,6 @@ export const initDates = async (db, symbols, Rounds) => {
     dates.push(curr_date.toISOString().substring(0, 10));
     curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
   }
-  console.log("Dates are " + dates);
   const datesD ={
     "dates" : dates,
     "period": random_period
