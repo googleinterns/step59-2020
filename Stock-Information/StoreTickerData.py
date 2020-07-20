@@ -49,13 +49,19 @@ time.sleep(3)
 NYSE =  pd.read_csv(path + "/companylist.csv")
 os.remove(path +"/companylist.csv")
 
+# Merging the NASDAQ and NYSE database
 StockEx = NASDAQ.append(NYSE)
 
 Industry =  StockEx['industry'].drop_duplicates().reset_index(drop=True)
 Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True)
 
 Stock = StockEx.drop_duplicates()
+
+# If the IPO year is N/A it means it was established earlier than 1972.
 Stock['IPOyear'].fillna(1972)
+
+# We want at least 2 years worth of data to work with not including the present year
+# So we always delete data before that.
 IPOCutoff = datetime.date.today() - relativedelta(years=3)
 Stock =  Stock[Stock.IPOyear <= IPOCutoff.year]
 StockD =  Stock.reset_index(drop=True).to_dict(orient='index')
@@ -75,6 +81,8 @@ SectorD = {}
 curr_IndL = {}
 curr_SectorL = {}
 
+#These loops get the number of stocks in each industry and sector and
+# make lists to use to randomly assign a position.
 for ind in IndustryList:
     stocks = Stock[Stock.industry == ind]
     if stocks.empty is not True:
@@ -116,6 +124,7 @@ for Info in StockV:
         'Sector': Info['Sector'],
         'industry': Info['industry'], 
         'Summary Quote': Info['Summary Quote'],
+        # Used to increase ease of querying
         'RandomPos' :random_pos[randrange(curr_len)],
         'IndustryPos': -1 if Info['industry'] is np.nan or Stock[Stock.industry == Info['industry']].empty else IndD[Info['industry']][randrange(curr_IndL[Info['industry']])],
         'SectorPos' : -1 if Info['Sector'] is np.nan or Stock[Stock.Sector == Info['Sector']].empty else SectorD[Info['Sector']][randrange(curr_SectorL[Info['Sector']])]

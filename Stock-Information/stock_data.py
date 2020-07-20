@@ -21,7 +21,7 @@ firebase_admin.initialize_app(cred,{
 firebase_request_adapter = requests.Request()
 
 app = Flask(__name__)
-app.secret_key =
+app.secret_key = "" # Secret key can't be on github
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
 CORS(app)
@@ -116,7 +116,7 @@ def get_symbols():
         responseD = {
             "symbols": random.choices(symbols,k=Num_of_Symbols)
         }
-        
+
     response = app.response_class(
         response=json.dumps(responseD),
         status=200,
