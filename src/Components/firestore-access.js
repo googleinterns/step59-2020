@@ -58,7 +58,7 @@ export const getChartUrl = async (db,roomId,symbol,endDate) =>{
   return imagesData["Stockpublic_image_url"][endDate]
 }
 
-export const getTechnicalUrl = async(db,roomId,symbol,endDate) =>{
+export const getTechnicalUrl = async (db, roomId, symbol, endDate) => {
   let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
   let imagesData = images.data();
   return imagesData["Stockpublic_image_url"][endDate]
@@ -70,32 +70,33 @@ function randomDate(start, end) {
 }
 
 // Minimum Period is 1Month
-export const initDates = async(db,symbols,Rounds)=>{
+export const initDates = async (db, symbols, Rounds) => {
   let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
     .where("Symbol","in",symbols).get()
-  let IPOyearMax = 0
+  let IPOyearMax = 0;
   let today = new Date();
   let year = today.getFullYear();
   Stocks.forEach(function(Stock){
       if (IPOyearMax < Stock.data().IPOyear){
-        IPOyearMax = Stock.data().IPOyear
+        IPOyearMax = Stock.data().IPOyear;
       }
-  })
+  });
+  
   // No more than 7 rounds(Periods are measured in months)
-  let min_window_size = 3
-  let yearDiff = year - (IPOyearMax+1)
-  let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds)
-  let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size))+min_window_size)
-  let startDate = new Date(IPOyearMax+1,1,1)
-  let endDate =  new Date(IPOyearMax+1,1+random_period,1)
-  let rand_startDate =  randomDate(startDate,endDate)
-  let dates =[]
-  let curr_date = rand_startDate
-  for(var i = 0; i < Rounds;i++){
-    dates.push(curr_date.toISOString().substring(0, 10))
+  let min_window_size = 3;
+  let yearDiff = year - (IPOyearMax+1);
+  let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
+  let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size))+min_window_size);
+  let startDate = new Date(IPOyearMax+1,1,1);
+  let endDate =  new Date(IPOyearMax+1,1+random_period,1);
+  let rand_startDate =  randomDate(startDate,endDate);
+  let dates = [];
+  let curr_date = rand_startDate;
+  for(var i = 0; i < Rounds; i++) {
+    dates.push(curr_date.toISOString().substring(0, 10));
     curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
   }
-  console.log("Dates are " + dates)
+  console.log("Dates are " + dates);
   const datesD ={
     "dates" : dates,
     "period": random_period
@@ -172,8 +173,8 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
   }
   return symbols
 }
-s
-export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
+
+export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   var formData = new FormData();
   formData.append('symbol',JSON.stringify(symbols));
   formData.append('RoomId',roomId);
@@ -203,7 +204,6 @@ export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
 export const getSymbols = async (db,roomID) =>{
   const symbol = await db.collection('Rooms').doc(roomID).get();
   const symbolData = await symbol.data();
-  console.log("Get symbols should return " + symbolData.symbols)
   return symbolData.symbols;
 }
 
@@ -215,19 +215,17 @@ export const getDate = async (db, roomID) => {
 
 
 export const getCurrentPrice = async (db,symbol,roomID) => {
-  try{
+  try {
     const Price = await db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices').get();
     const priceData = Price.data();
-    try{
+    try {
       const data = await db.collection('Rooms').doc(roomID).get()
       const roomData = data.data();
       return priceData.prices[roomData.day_index];
-    }
-    catch(error){
+    } catch(error) {
       console.log("Error is " +  error)
     }
-  }
-  catch(error){
+  } catch(error){
     console.log("Error is " +  error)
   }
 }
@@ -253,14 +251,9 @@ export const makeInvestment = (db, roomID, userID, symbol, price, num_shares) =>
     "symbol": symbol,
     "share_price": price,
     "num_shares": num_shares,
-    //"total_purchase_price": price * num_shares
+    "total_purchase_price": (price * num_shares)
   }
 
-  console.log(JSON.stringify(invJSON));
-
-  //const invObj = new Investment(symbol, price, num_shares);
-  //const invJSON = invObj.to_dict();
-  
   const userRef = db.collection('Rooms').doc(roomID)
     .collection('users').doc(userID);
 

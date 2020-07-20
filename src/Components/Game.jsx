@@ -1,9 +1,6 @@
 import React, {Fragment} from 'react';
 import {Helmet} from 'react-helmet';
-//import logo from './logo.svg';
-//import './App.css';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
-
 
 import Home from './Home';
 import GameLobby from './quiz/Lobby';

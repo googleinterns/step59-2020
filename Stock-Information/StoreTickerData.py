@@ -60,7 +60,6 @@ IPOCutoff = datetime.date.today() - relativedelta(years=3)
 Stock =  Stock[Stock.IPOyear <= IPOCutoff.year]
 StockD =  Stock.reset_index(drop=True).to_dict(orient='index')
 
-
 StockD = {str(k):v for (k,v) in StockD.items()}
 StockV = StockD.values()
 i = 0
@@ -129,7 +128,5 @@ for Info in StockV:
     if Info['Sector'] is not np.nan:
         curr_SectorL[Info['Sector']]-=1
     print(str(i)+ "\\" + str(len(StockV)) + ":" + Info['Symbol'] +" has been added to the database with IPO year " +  str(Info['IPOyear']))
-
-
 
 
