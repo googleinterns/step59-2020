@@ -77,8 +77,7 @@ export const initDates = async(db,symbols,Rounds)=>{
   let today = new Date();
   let year = today.getFullYear();
   Stocks.forEach(function(Stock){
-      if (IPOyearMax < Stock.data().IPOyear)
-      {
+      if (IPOyearMax < Stock.data().IPOyear){
         IPOyearMax = Stock.data().IPOyear
       }
   })
@@ -92,8 +91,7 @@ export const initDates = async(db,symbols,Rounds)=>{
   let rand_startDate =  randomDate(startDate,endDate)
   let dates =[]
   let curr_date = rand_startDate
-  for(var i = 0; i < Rounds;i++)
-  {
+  for(var i = 0; i < Rounds;i++){
     dates.push(curr_date.toISOString().substring(0, 10))
     curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
   }
@@ -107,34 +105,29 @@ export const initDates = async(db,symbols,Rounds)=>{
 
 export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
   let symbols = []
-  if(Sector !== null && Industry !== null)
-  {
+  if(Sector !== null && Industry !== null){
     let formData = new FormData();
     formData.append('Industry',Industry);
     formData.append('Sector',Sector)
     formData.append('NumOfSymbols',NumOfSymbols)
-    try
-    {
+    try{
       let response = await fetch('http://localhost:8080/get-symbols', {
         method: 'POST',
         mode: 'cors',
         body: formData
       })
       let symbolJson = await response.json()
-      if (symbolJson.hasOwnProperty("Error"))
-      {
+      if (symbolJson.hasOwnProperty("Error")){
         console.log("No Symbols for your query")
         return symbols
       }
       symbols = symbolJson['symbols']
     }
-    catch(error)
-    {
+    catch(error){
       console.log("Error with Query: " + error)
     }
   }
-  else if(Industry !== null)
-  {
+  else if(Industry !== null){
     let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
     let numOfIndustries= IndustryInfo.data().Industry[Industry];
     let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
@@ -146,8 +139,7 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
       symbols.push(doc.data().Symbol)
     })
   }
-  else if(Sector !== null)
-  {
+  else if(Sector !== null){
     let SectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
     let numOfSectors= SectorInfo.data().Sector[Sector];
     let cutoff = Math.floor((Math.random()  * (numOfSectors - NumOfSymbols))+NumOfSymbols);
@@ -159,8 +151,7 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
       symbols.push(doc.data().Symbol)
     })
   }
-  else
-  {
+  else{
     let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
     let numOfStocks = StockInfo.data().NumOfStocks - 1;
     let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
@@ -181,29 +172,25 @@ export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
   formData.append('symbol',JSON.stringify(symbols));
   formData.append('RoomId',roomId)
   formData.append('end-date',JSON.stringify(endDates));
-  try
-  {
+  try{
     await fetch('http://localhost:8080/get-prices', {
         method: 'POST',
         mode: 'cors',
         body: formData
     })
   }
-  catch(err) 
-  {
+  catch(err) {
     console.log("Error is " +  err)
   }
   formData.append('periodLen',periodLen)
-  try
-  {
+  try{
     await fetch('http://localhost:8080/get-stock-image', {
         method: 'POST',
         mode: 'cors',
         body: formData
     })
   }
-  catch(error)
-  {
+  catch(error){
     console.log("Error is " +  error)
   }
 }
@@ -223,23 +210,19 @@ export const getDate = async (db, roomID) => {
 // TODO: update this once time_series data comes in
 // to actually get the price and not just the date
 export const getCurrentPrice = async (db,symbol,roomID) => {
-  try
-  {
+  try{
     const Price = await db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices').get();
     const priceData = Price.data();
-    try
-    {
+    try{
       const data = await db.collection('Rooms').doc(roomID).get()
       const roomData = data.data();
       return priceData.prices[roomData.day_index];
     }
-    catch(error)
-    {
+    catch(error){
       console.log("Error is " +  error)
     }
   }
-  catch(error)
-  {
+  catch(error){
     console.log("Error is " +  error)
   }
 }
@@ -248,15 +231,13 @@ export const advanceDay = async (db, roomID) => {
   const roomRef = await db.collection('Rooms').doc(roomID);
   const data = await roomRef.get();
   const roomData = data.data();
-  if(roomData.day_index < roomData.dates.length)
-  {
+  if(roomData.day_index < roomData.dates.length){
     roomRef.update({
       day_index: firebase.firestore.FieldValue.increment(1)
     });
     return 1
   }
-  else
-  {
+  else{
     console.log("Game is finished.")
     return 0;
   }
