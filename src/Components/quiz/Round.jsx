@@ -40,9 +40,7 @@ class Round extends React.Component {
         const symbols = await getSymbols(firestore,this.state.roomID)
         let symbol = symbols[0]
         this.setState({
-            currSymbol: symbol
-        })
-        this.setState({
+            currSymbol: symbol,
             technicalIndicators: await getTechnicalUrl(firestore,this.state.roomID,symbol,end) ,
             chartURL: await getChartUrl(firestore,this.state.roomID,symbol,end),
             currentCash: await getUserBalance(firestore, this.state.roomID, userID),

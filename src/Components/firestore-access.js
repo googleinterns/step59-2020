@@ -106,6 +106,7 @@ export const initDates = async(db,symbols,Rounds)=>{
 export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
   let symbols = []
   if(Sector !== null && Industry !== null){
+
     let formData = new FormData();
     formData.append('Industry',Industry);
     formData.append('Sector',Sector)
@@ -126,8 +127,10 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
     catch(error){
       console.log("Error with Query: " + error)
     }
+
   }
   else if(Industry !== null){
+
     let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
     let numOfIndustries= IndustryInfo.data().Industry[Industry];
     let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
@@ -138,8 +141,10 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
     Industries.forEach(function(doc){
       symbols.push(doc.data().Symbol)
     })
+
   }
   else if(Sector !== null){
+
     let SectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
     let numOfSectors= SectorInfo.data().Sector[Sector];
     let cutoff = Math.floor((Math.random()  * (numOfSectors - NumOfSymbols))+NumOfSymbols);
@@ -150,27 +155,28 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
     Sectors.forEach(function(doc){
       symbols.push(doc.data().Symbol)
     })
+
   }
   else{
+
     let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
     let numOfStocks = StockInfo.data().NumOfStocks - 1;
     let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
-    console.log("Random Cutoff:" + cutoff)
     let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
     .where("RandomPos",">=", cutoff)
     .orderBy("RandomPos").limit(NumOfSymbols).get()
     Stocks.forEach(function(Stock){
-      console.log("Stock Data:" + Stock.data())
       symbols.push(Stock.data().Symbol)
     })
+
   }
-  console.log("Init Symbols, symbols List is " + symbols)
   return symbols
 }
+s
 export const initializeQuiz = async(symbols,roomId,periodLen,endDates) =>{
   var formData = new FormData();
   formData.append('symbol',JSON.stringify(symbols));
-  formData.append('RoomId',roomId)
+  formData.append('RoomId',roomId);
   formData.append('end-date',JSON.stringify(endDates));
   try{
     await fetch('http://localhost:8080/get-prices', {
@@ -207,8 +213,7 @@ export const getDate = async (db, roomID) => {
   return roomData.dates[roomData.day_index];
 }
 
-// TODO: update this once time_series data comes in
-// to actually get the price and not just the date
+
 export const getCurrentPrice = async (db,symbol,roomID) => {
   try{
     const Price = await db.collection('Rooms').doc(roomID).collection(symbol).doc('Prices').get();
@@ -238,7 +243,6 @@ export const advanceDay = async (db, roomID) => {
     return 1
   }
   else{
-    console.log("Game is finished.")
     return 0;
   }
 }
