@@ -14,7 +14,6 @@ export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
   // TODO: send POST request to get time series data for GOOG
   // for prototype, hard-code 3 points in time
   const symbolsL = await initSymbols(db,null,null,NumOfSymbols)
-  console.log("Symbol List is  " + symbolsL)
   const datesD = await initDates(db,symbolsL,Rounds)
   roomRef.set({
     symbols: symbolsL,
