@@ -57,7 +57,7 @@ export const getUserBalance = async (db, roomID, userID) => {
   return userData.money_left;
 }
 
-export const getChartUrl = async(db,roomId,symbol,endDate) =>{
+export const getChartUrl = async (db,roomId,symbol,endDate) =>{
   let images = await db.collection('Rooms').doc(roomId).collection(symbol).doc('images').get();
   let imagesData = images.data();
   return imagesData["Stockpublic_image_url"][endDate]
