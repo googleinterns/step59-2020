@@ -8,8 +8,8 @@ export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
   const roomRef = await db.collection('Rooms').doc();
   const roomID = roomRef.id;
 
-  const symbolsL = await initSymbols(db,null,null,NumOfSymbols)
-  const datesD = await initDates(db,symbolsL,Rounds)
+  const symbolsL = await initSymbols(db,null,null,NumOfSymbols);
+  const datesD = await initDates(db,symbolsL,Rounds);
   roomRef.set({
     symbols: symbolsL,
     day_index: 0,
@@ -20,8 +20,6 @@ export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
 
   const usersRef = roomRef.collection('users');
   const userRef = usersRef.doc(userID);
-  console.log("SetUp room was called")
-
 
   const gameInfo = {
     investments: [],
@@ -217,7 +215,6 @@ export const getDate = async (db, roomID) => {
 
 // returns current price for all symbols being tracked
 export const getCurrentPrice = async (db, roomID) => {
-
   const roomDoc = await db.collection('Rooms').doc(roomID).get();
   const roomData = roomDoc.data();
   const dayIndex = roomData.day_index;
@@ -254,10 +251,9 @@ export const advanceDay = async (db, roomID) => {
   }
 }
 
-export const makeInvestment = (db, roomID, userID, symbolIndex, price, num_shares) => {
-  
+export const makeInvestment = async (db, roomID, userID, symbolIndex, price, num_shares) => {
   const invJSON = {
-    "symbol": getSymbolNameFromIndex(db, roomID, symbolIndex),
+    "symbol_index": symbolIndex,
     "share_price": price,
     "num_shares": num_shares,
     "total_purchase_price": (price * num_shares)
