@@ -21,7 +21,7 @@ firebase_admin.initialize_app(cred,{
 firebase_request_adapter = requests.Request()
 
 app = Flask(__name__)
-app.secret_key = "" # Secret key can't be on github
+app.secret_key = """Xyeo\x06\x97\xc7\xf7\x1c\x84\xcd\x04\x1e\x07`]\x1fA\x83-\x1e#\xeb@""" # Secret key can't be on github
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
 CORS(app)
@@ -40,6 +40,7 @@ A success code and it uploads the image to firebase cloud storage.
 '''
 @app.route('/get-stock-image',methods=['POST'])
 def get_stock_image():
+
     symbols = json.loads(request.form['symbol'],encoding="utf-8")
     period = request.form['periodLen']
     roomID = request.form['RoomId']
@@ -87,7 +88,13 @@ def get_stock_image():
                     'Stockpublic_image_url':StockDict,
             }
             db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response 
 
 @app.route('/get-symbols',methods=['POST'])
 def get_symbols():
@@ -122,6 +129,7 @@ def get_symbols():
         status=200,
         mimetype='application/json'
     )
+    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
     
 
@@ -172,7 +180,13 @@ def time_series():
             'prices': prices
         }
         db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response 
      
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
