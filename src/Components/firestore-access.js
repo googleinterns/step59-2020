@@ -4,6 +4,8 @@ import "firebase/firestore";
 
 const STARTING_MONEY = 10000;
 
+// sets up the room to store symbols, indicator graphs, time series,
+// and default portfolio values
 export const setUpRoom =  async (db,NumOfSymbols,Rounds,userID) => {
   const roomRef = await db.collection('Rooms').doc();
   const roomID = roomRef.id;
@@ -67,7 +69,8 @@ function randomDate(start, end) {
   return date;
 }
 
-// Minimum Period is 1Month
+// gets dates in equally spaced intervals for which to retrieve stock data
+// note: Minimum Period is 1Month
 export const initDates = async (db, symbols, Rounds) => {
   let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
     .where("Symbol","in",symbols).get();
@@ -105,6 +108,7 @@ export const initDates = async (db, symbols, Rounds) => {
   return datesD;
 }
 
+// chooses random symbols to be used during the game
 export const initSymbols = async(db,Industry,Sector,NumOfSymbols) => {
 
   let symbols = [];
@@ -178,6 +182,7 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) => {
   return symbols;
 }
 
+// requests prices and technical indicator images to be written to the database
 export const initializeQuiz = async (symbols, roomID, periodLen, endDates) => {
   var formData = new FormData();
   formData.append('symbol', JSON.stringify(symbols));
@@ -208,6 +213,7 @@ export const initializeQuiz = async (symbols, roomID, periodLen, endDates) => {
   }
 }
 
+// gets a list of all symbols being tracked
 export const getSymbols = async (db, roomID) => {
   const symbol = await db.collection('Rooms').doc(roomID).get();
   const symbolData = await symbol.data();
@@ -242,6 +248,7 @@ export const getCurrentPrice = async (db, roomID) => {
   return prices;
 }
 
+// advances to the next round (day) in the game or returns that the game is over
 export const advanceDay = async (db, roomID) => {
   const roomRef = db.collection('Rooms').doc(roomID);
   const data = await roomRef.get();
@@ -258,6 +265,7 @@ export const advanceDay = async (db, roomID) => {
   }
 }
 
+// logs an investment in the database
 export const makeInvestment = async (db, roomID, userID, symbolIndex, price, num_shares) => {
   const invJSON = {
     "symbol_index": symbolIndex,
@@ -278,6 +286,7 @@ export const makeInvestment = async (db, roomID, userID, symbolIndex, price, num
   });
 }
 
+// retrieves symbol name given the symbol's index
 export const getSymbolNameFromIndex = async (db, roomID, symbolIndex) => {
   const roomDoc = await db.collection('Rooms').doc(roomID).get();
   const symbols = roomDoc.data().symbols;
