@@ -4,7 +4,7 @@ import "firebase/firestore";
 
 const STARTING_MONEY = 10000;
 
-export const setUpRoom = (db,NumOfSymbols,Rounds,userID,password) => {
+export const setUpRoom = (db,symbolsL,Rounds,password) => {
     const roomRef = db.collection('Rooms').doc();
     roomRef.set({
         day_index: 0,
@@ -12,14 +12,12 @@ export const setUpRoom = (db,NumOfSymbols,Rounds,userID,password) => {
         password: password,
     });
     const roomID = roomRef.id;
-    initSymbols(db,null,null,NumOfSymbols).then((symbolsL) => {
-        initDates(db,symbolsL,Rounds).then((datesD)=> {
-            roomRef.update({
-                symbols: symbolsL,
-                dates: datesD["dates"],
-            });
-            initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
+    initDates(db,symbolsL,Rounds).then((datesD)=> {
+        roomRef.update({
+            symbols: symbolsL,
+            dates: datesD["dates"],
         });
+        initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
     });
 
     // const usersRef = roomRef.collection('users');
@@ -105,14 +103,24 @@ export const initDates = async (db, symbols, Rounds) => {
     return datesD
 }
 
-export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
+function atLeastTwo(a,b,c) {
+    return a ? (b || c) : (b && c);
+}
+// Return a list of symbols used in the configuration process.
+export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
     let symbols = []
-    if(Sector !== null && Industry !== null){
-
+    if(atLeastTwo(Industry,Sector,MarketCap)){
+        //In the case where a person wants to query using multiple features it may return a larger request, 
+        //so we send it to the backend
         let formData = new FormData();
-        formData.append('Industry',Industry);
-        formData.append('Sector',Sector)
+        if(Industry)
+            formData.append('Industry',Industry);
+        if(Sector)
+            formData.append('Sector',Sector);
+        if(MarketCap)
+            formData.append('MarketCap',MarketCap)
         formData.append('NumOfSymbols',NumOfSymbols)
+        console.log("Form Data should look like " + formData)
         try{
             let response = await fetch('http://localhost:8080/get-symbols', {
                 method: 'POST',
@@ -131,6 +139,7 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
         }
 
     }
+    // All of the rest of the values use a search by Xpos to make the query as small as possible(O(numOfSymbols))
     else if(Industry !== null){
 
         let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
@@ -143,7 +152,18 @@ export const initSymbols = async(db,Industry,Sector,NumOfSymbols) =>{
         Industries.forEach(function(doc){
             symbols.push(doc.data().Symbol)
         })
-
+    }
+    else if(MarketCap !== null){
+        let MarketCapInfo =  await db.collection("Ticker-Info").doc("Market-Cap").get();
+        let numStocks= MarketCapInfo.data().MarketCap[MarketCap];
+        let cutoff = Math.floor((Math.random()  * (numStocks - NumOfSymbols))+NumOfSymbols);
+        let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+            .where("MarketCapSize","==",MarketCap)
+            .where("MarketCapPos","<=", cutoff)
+            .orderBy("MarketCapPos").limit(NumOfSymbols).get()
+        Stocks.forEach(function(doc){
+            symbols.push(doc.data().Symbol)
+        })
     }
     else if(Sector !== null){
 
@@ -230,6 +250,51 @@ export const getCurrentPrice = async (db,symbol,roomID) => {
     } catch(error){
         console.log("Error is " +  error)
     }
+}
+function compDoc(a, b){
+    if ( a.value < b.value ){
+        return -1;
+    }
+    if ( a.value > b.value ){
+    return 1;
+    }
+    return 0;
+}
+
+export const getIndustries = async(db) =>{
+    let Industries = await db.collection("Ticker-Info").doc("Industry").get();
+    let IndustryData =  Industries.data().Industry;
+    let IndustryList = [];
+    for(const Industry in IndustryData){
+      IndustryList.push({value: Industry, label: Industry});
+    }
+    IndustryList.push({value: null, label: "None"});
+    IndustryList.sort(compDoc);
+    return IndustryList
+}
+
+export const getSectors = async(db) =>{
+    let Sectors = await db.collection("Ticker-Info").doc("Sector").get();
+    let SectorData =  Sectors.data().Sector;
+    let SectorList = [];
+    for(const Sector in SectorData){
+      SectorList.push({value: Sector, label: Sector});
+    }
+    SectorList.push({value: null, label:"None"});
+    SectorList.sort(compDoc);
+    return SectorList;
+}
+
+export const getMarketCaps = async(db) =>{
+    let MarketCaps = await db.collection("Ticker-Info").doc("Market-Cap").get();
+    let MarketCapData =  MarketCaps.data().MarketCap;
+    let MarketCapList = [];
+    for(const Stock in MarketCapData){
+      MarketCapList.push({value: Stock, label: Stock});
+    }
+    MarketCapList.push({value: null, label:"None"});
+    MarketCapList.sort(compDoc);
+    return MarketCapList;
 }
 
 export const advanceDay = async (db, roomID) => {

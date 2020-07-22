@@ -21,7 +21,7 @@ firebase_admin.initialize_app(cred,{
 firebase_request_adapter = requests.Request()
 
 app = Flask(__name__)
-app.secret_key = """Xyeo\x06\x97\xc7\xf7\x1c\x84\xcd\x04\x1e\x07`]\x1fA\x83-\x1e#\xeb@""" # Secret key can't be on github
+app.secret_key = ""
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
 CORS(app)
@@ -40,7 +40,6 @@ A success code and it uploads the image to firebase cloud storage.
 '''
 @app.route('/get-stock-image',methods=['POST'])
 def get_stock_image():
-
     symbols = json.loads(request.form['symbol'],encoding="utf-8")
     period = request.form['periodLen']
     roomID = request.form['RoomId']
@@ -88,27 +87,26 @@ def get_stock_image():
                     'Stockpublic_image_url':StockDict,
             }
             db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
-    response = app.response_class(
-        response=json.dumps({'success':True}),
-        status=200,
-        mimetype='application/json'
-    )
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response 
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
 
 @app.route('/get-symbols',methods=['POST'])
 def get_symbols():
-    Industry = request.form['Industry']
-    Sector = request.form['Sector']
-    Num_of_Symbols = request.form['NumOfSymbols']
-
-    IndSect = db.collection("Ticker-Info").doc("Stock").collection("Stocks").where("Industry","==",Industry) \
-    .where("Sector","==", Sector).stream()
+    Num_of_Symbols = int(request.form['NumOfSymbols'])
+    StocksQuery = db.collection("Ticker-Info").document("Stock").collection("Stocks")
+    if 'Industry' in request.form:
+        print(request.form['Industry'])
+        StocksQuery = StocksQuery.where("Industry","==",request.form['Industry'])
+    if 'Sector'  in request.form:
+        print(request.form['Sector'])
+        StocksQuery = StocksQuery.where("Sector","==",request.form['Sector'])
+    if 'MarketCap' in request.form:
+        print(request.form['MarketCap'])
+        StocksQuery = StocksQuery.where("MarketCapSize","==",request.form['MarketCap'])
     num_of_stocks = 0
     symbols = []
-    for stock in IndSect:
+    for stock in StocksQuery.stream():
         num_of_stocks+=1
-        symbols.append(stock.to_dict()['Stock Data']['Symbol'])
+        symbols.append(stock.to_dict()['Symbol'])
 
     responseD ={}
     if num_of_stocks == 0:
@@ -129,7 +127,6 @@ def get_symbols():
         status=200,
         mimetype='application/json'
     )
-    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
     
 
@@ -180,13 +177,7 @@ def time_series():
             'prices': prices
         }
         db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
-    response = app.response_class(
-        response=json.dumps({'success':True}),
-        status=200,
-        mimetype='application/json'
-    )
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response 
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
      
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

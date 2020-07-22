@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import {db, fire, auth, firestore} from '../../firebase.js';
-import {setUpRoom} from '../firebase-access.jsx'
+// import {setUpRoom} from '../firebase-access.jsx'
+import Config from '../pages/Config.jsx';
+
 
 function generateGameId() {
     let id = '';
@@ -19,7 +21,7 @@ class Create extends Component {
             pagetype: 'not-created',
             gameId: '',
         }
-        this.createGameWrapper = this.createGameWrapper.bind(this);
+        // this.createGameWrapper = this.createGameWrapper.bind(this);
     }
     
     componentDidMount() {
@@ -50,13 +52,19 @@ class Create extends Component {
     //         pagetype: 'created',
     //     });
     // }
-    async createGameWrapper() {
-        var _gameId = await setUpRoom(db,1,3,null,'');
+    updatePageType = (status,_gameId) => {
         this.setState({
-            pagetype: 'created',
+            pagetype: status,
             gameId: _gameId,
         })
     }
+    // async createGameWrapper() {
+    //     var _gameId = await setUpRoom(db,1,3,'');
+    //     this.setState({
+    //         pagetype: 'created',
+    //         gameId: _gameId,
+    //     })
+    // }
 
     render() {
         console.log('render called');
@@ -67,7 +75,7 @@ class Create extends Component {
 
             <div className="app-page create-page">
                 {pagetype === 'not-created' &&
-                    <button onClick={async () => await this.createGameWrapper()}> Create Game! </button>
+                   <Config updatePageType ={this.updatePageType.bind(this)}/>
                 }
 
                 {pagetype === 'created' && (
