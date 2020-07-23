@@ -148,7 +148,8 @@ class Quiz extends Component {
                 changeArray.push((currentRow[SELL] * -1));
             }
             else {
-                throw "An error occurred when parsing the form input.";
+                alert("Please enter an action for each symbol");
+                break;
             }
         }
  
