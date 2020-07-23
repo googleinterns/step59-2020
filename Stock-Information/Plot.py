@@ -83,7 +83,7 @@ def getRSIImage(data,symbol,roomID,end_date):
     StockPlot[cols].plot(color=colors)
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png'
     plt.savefig(name)
-    
+
 def splitMonths(months):
     if months <= 12:
         return (0,months)

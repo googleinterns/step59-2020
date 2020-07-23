@@ -1,0 +1,6 @@
+*.json
+*.png
+secret-key
+build/
+.firebaserc
+node_modules

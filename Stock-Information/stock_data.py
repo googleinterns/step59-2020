@@ -21,7 +21,7 @@ firebase_admin.initialize_app(cred,{
 firebase_request_adapter = requests.Request()
 
 app = Flask(__name__)
-app.secret_key = "" # Secret key can't be on github
+app.secret_key = ""
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
 CORS(app)
@@ -91,17 +91,22 @@ def get_stock_image():
 
 @app.route('/get-symbols',methods=['POST'])
 def get_symbols():
-    Industry = request.form['Industry']
-    Sector = request.form['Sector']
-    Num_of_Symbols = request.form['NumOfSymbols']
-
-    IndSect = db.collection("Ticker-Info").doc("Stock").collection("Stocks").where("Industry","==",Industry) \
-    .where("Sector","==", Sector).stream()
+    Num_of_Symbols = int(request.form['NumOfSymbols'])
+    StocksQuery = db.collection("Ticker-Info").document("Stock").collection("Stocks")
+    if 'Industry' in request.form:
+        print(request.form['Industry'])
+        StocksQuery = StocksQuery.where("Industry","==",request.form['Industry'])
+    if 'Sector'  in request.form:
+        print(request.form['Sector'])
+        StocksQuery = StocksQuery.where("Sector","==",request.form['Sector'])
+    if 'MarketCap' in request.form:
+        print(request.form['MarketCap'])
+        StocksQuery = StocksQuery.where("MarketCapSize","==",request.form['MarketCap'])
     num_of_stocks = 0
     symbols = []
-    for stock in IndSect:
+    for stock in StocksQuery.stream():
         num_of_stocks+=1
-        symbols.append(stock.to_dict()['Stock Data']['Symbol'])
+        symbols.append(stock.to_dict()['Symbol'])
 
     responseD ={}
     if num_of_stocks == 0:

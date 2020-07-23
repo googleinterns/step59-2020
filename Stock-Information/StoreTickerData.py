@@ -56,9 +56,51 @@ Industry =  StockEx['industry'].drop_duplicates().reset_index(drop=True)
 Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True)
 
 Stock = StockEx.drop_duplicates()
-
 # If the IPO year is N/A it means it was established earlier than 1972.
 Stock['IPOyear'].fillna(1972)
+#Market Cap Code
+''' 
+This is a little more complicated than the Industry and Sector versions 
+because we can't easily query with
+Pandas Dataframe because of the method it is stored
+'''
+TickersMarket = Stock[["MarketCap","Symbol"]]
+TickersMarket.fillna(-1,inplace=True)
+MarketCapSymbolD ={}
+MarketCapD ={
+    "Mega-Cap":0,
+    "Large-Cap":0,
+    "Mid-Cap":0,
+    "Small-Cap":0,
+    "Micro-Cap":0,
+    "Nano-Cap":0,
+}
+for (index,stock) in TickersMarket.iterrows():
+    if stock.MarketCap is not -1:
+        curr_cap = float(str(stock.MarketCap)[1:-1])/1000.0 if str(stock.MarketCap)[-1] is "M" else float(str(stock.MarketCap)[1:-1])
+        if curr_cap  >= 200 :
+            MarketCapSymbolD[stock.Symbol] = "Mega-Cap"
+            MarketCapD["Mega-Cap"] += 1
+        elif curr_cap >= 10:
+            MarketCapSymbolD[stock.Symbol] = "Large-Cap"
+            MarketCapD["Large-Cap"] += 1
+        elif curr_cap >= 2:
+            MarketCapSymbolD[stock.Symbol] = "Mid-Cap"
+            MarketCapD["Mid-Cap"] += 1
+        elif curr_cap >= 0.3:
+            MarketCapSymbolD[stock.Symbol] = "Small-Cap"
+            MarketCapD["Small-Cap"] += 1
+        elif curr_cap >= 0.05:
+            MarketCapSymbolD[stock.Symbol] = "Micro-Cap"
+            MarketCapD["Micro-Cap"] += 1
+        else:
+            MarketCapSymbolD[stock.Symbol] = "Nano-Cap"
+            MarketCapD["Nano-Cap"] += 1
+    else:
+        MarketCapSymbolD[stock.Symbol] = "N/A"
+MarketCapDictL = {}
+for (key,value) in MarketCapD.items():
+    MarketCapDictL[key] = range(value)
 
 # We want at least 2 years worth of data to work with not including the present year
 # So we always delete data before that.
@@ -110,22 +152,26 @@ IndDocument = {
 SectorDocument ={
     "Sector":curr_SectorL
 }
+MarketCapDocument = {
+    "MarketCap":MarketCapD
+}
 db.collection('Ticker-Info').document('Industry').set(IndDocument)
 db.collection('Ticker-Info').document('Sector').set(SectorDocument)
 db.collection('Ticker-Info').document('Stock').set(StocksD)
+db.collection('Ticker-Info').document('Market-Cap').set(MarketCapDocument)
 
 for Info in StockV:
     NewD = {
         'Symbol': Info['Symbol'],
         'Name': Info['Name'], 
-        'LastSale': Info['LastSale'],
         'MarketCap': Info['MarketCap'],
         'IPOyear': Info['IPOyear'],
         'Sector': Info['Sector'],
-        'industry': Info['industry'], 
-        'Summary Quote': Info['Summary Quote'],
+        'Industry': Info['industry'], 
+        'MarketCapSize': MarketCapSymbolD[Info['Symbol']],
         # Used to increase ease of querying
         'RandomPos' :random_pos[randrange(curr_len)],
+        "MarketCapPos": -1 if MarketCapSymbolD[Info['Symbol']] is "N/A" else MarketCapDictL[MarketCapSymbolD[Info['Symbol']]][randrange(MarketCapD[MarketCapSymbolD[Info['Symbol']]])],
         'IndustryPos': -1 if Info['industry'] is np.nan or Stock[Stock.industry == Info['industry']].empty else IndD[Info['industry']][randrange(curr_IndL[Info['industry']])],
         'SectorPos' : -1 if Info['Sector'] is np.nan or Stock[Stock.Sector == Info['Sector']].empty else SectorD[Info['Sector']][randrange(curr_SectorL[Info['Sector']])]
     }
@@ -136,6 +182,7 @@ for Info in StockV:
         curr_IndL[Info['industry']]-=1 
     if Info['Sector'] is not np.nan:
         curr_SectorL[Info['Sector']]-=1
+    if MarketCapSymbolD[Info['Symbol']] is not "N/A":
+        MarketCapD[MarketCapSymbolD[Info['Symbol']]]-=1
     print(str(i)+ "\\" + str(len(StockV)) + ":" + Info['Symbol'] +" has been added to the database with IPO year " +  str(Info['IPOyear']))
-
 

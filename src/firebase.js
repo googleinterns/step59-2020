@@ -13,14 +13,15 @@ const firebaseConfig = {
   measurementId: "G-GMNRGZQ858"
 };
 
-firebase.initializeApp(firebaseConfig);
+const fire = firebase.initializeApp(firebaseConfig);
 
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
+const auth = firebase.auth();
+const firestore = firebase.firestore();
+const db = firebase.firestore();
 
 
 const provider = new firebase.auth.GoogleAuthProvider();
-export const signInWithGoogle = () => {
+const signInWithGoogle = () => {
   auth.signInWithPopup(provider);
 };
 
@@ -35,3 +36,4 @@ export const getUserID = () =>{
     throw "Null User"
   }
 };
+export {db, fire, auth, firestore, signInWithGoogle};
