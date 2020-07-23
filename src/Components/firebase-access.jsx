@@ -170,7 +170,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("MarketCapSize","==",MarketCap)
           .where("MarketCapPos","<=", cutoff)
-          .orderBy("MarketCapPos").limit(NumOfSymbols).get()
+          .orderBy("MarketCapPos").limit(NumOfSymbols).get();
       Stocks.forEach(function(doc){
           symbols.push(doc.data().Symbol)
       })
