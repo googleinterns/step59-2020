@@ -161,7 +161,6 @@ db.collection('Ticker-Info').document('Stock').set(StocksD)
 db.collection('Ticker-Info').document('Market-Cap').set(MarketCapDocument)
 
 for Info in StockV:
-    # print(f'{Info["Symbol"]}  has a market cap of {Info["MarketCap"]} and is a {MarketCapSymbolD[Info["Symbol"]]} stock. There are {MarketCapD[MarketCapSymbolD[Info["Symbol"]]]} {MarketCapSymbolD[Info["Symbol"]]} stocks. ')
     NewD = {
         'Symbol': Info['Symbol'],
         'Name': Info['Name'], 
@@ -186,5 +185,4 @@ for Info in StockV:
     if MarketCapSymbolD[Info['Symbol']] is not "N/A":
         MarketCapD[MarketCapSymbolD[Info['Symbol']]]-=1
     print(str(i)+ "\\" + str(len(StockV)) + ":" + Info['Symbol'] +" has been added to the database with IPO year " +  str(Info['IPOyear']))
-
 
