@@ -130,7 +130,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       if(MarketCap)
           formData.append('MarketCap',MarketCap);
       formData.append('NumOfSymbols',NumOfSymbols);
-      try{
+      try {
           let response = await fetch('http://localhost:8080/get-symbols', {
               method: 'POST',
               mode: 'cors',
