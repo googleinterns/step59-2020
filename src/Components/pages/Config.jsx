@@ -88,13 +88,11 @@ class Config extends React.Component {
             console.log("Error is "  + error)
           }
           //TODO: Separate initalize symbols and setuproom functions
-          if(Symbols.length)
-          {
-              let roomID =await setUpRoom(firestore,Symbols,Rounds,'');
+          if(Symbols.length) {
+              let roomID = await setUpRoom(firestore,Symbols,Rounds,'');
               this.props.updatePageType('created',roomID);
           }
-          else
-          {
+          else {
               alert("No Symbols match your query");
           }
       }
