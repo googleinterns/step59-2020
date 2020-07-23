@@ -91,8 +91,6 @@ class Play extends Component {
                         userId: uniqueUserId,
                     });
                     that.initGameListener();
-                    //create event listener
-                    //that.initGameListener();
 
                 } else if (gameInfo.password === password) {
                     console.log("game not being hosted yet");
