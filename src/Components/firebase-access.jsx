@@ -76,7 +76,7 @@ export const getChartUrl = async (db, roomID, symbol, endDate) => {
 export const getTechnicalUrl = async (db, roomID, symbol, endDate) => {
   let images = await db.collection('Rooms').doc(roomID).collection(symbol).doc('images').get();
   let imagesData = images.data();
-  return imagesData["Stockpublic_image_url"][endDate]
+  return [imagesData["ADXpublic_image_url"][endDate],imagesData["MACDpublic_image_url"][endDate],imagesData['RSIpublic_image_url']]
 }
 
 function randomDate(start, end) {
@@ -208,11 +208,11 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
           .where("RandomPos",">=", cutoff)
           .orderBy("RandomPos").limit(NumOfSymbols).get()
       Stocks.forEach(function(Stock){
-          symbols.push(Stock.data().Symbol)
+          symbols.push(Stock.data().Symbol);
       })
 
   }
-  return symbols
+  return symbols;
 }
 
 // requests prices and technical indicator images to be written to the database

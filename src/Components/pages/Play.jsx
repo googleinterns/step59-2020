@@ -45,8 +45,6 @@ class Play extends Component {
         this.initGameListener = this.initGameListener.bind(this);
     }
 
-    componentDidMount() {
-    }
 
     handleChangeSelect = (event) => {
         this.setState({ [event.target.name]: event.target.value });
