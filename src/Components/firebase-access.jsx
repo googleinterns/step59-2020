@@ -130,7 +130,6 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       if(MarketCap)
           formData.append('MarketCap',MarketCap);
       formData.append('NumOfSymbols',NumOfSymbols);
-      console.log("Form Data should look like " + formData)
       try{
           let response = await fetch('http://localhost:8080/get-symbols', {
               method: 'POST',
