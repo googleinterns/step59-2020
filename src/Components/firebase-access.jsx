@@ -189,7 +189,8 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       })
 
   }
-  else{
+
+  else {
 
       let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
       let numOfStocks = StockInfo.data().NumOfStocks - 1;
