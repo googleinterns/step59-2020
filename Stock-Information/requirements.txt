@@ -1,9 +1,10 @@
-yfinance
-numpy
+
+firebase_admin
 flask
 flask_cors
-firebase_admin
-pathlib
-pandas
-ta
 matplotlib
+numpy
+pandas
+pathlib
+ta
+yfinance

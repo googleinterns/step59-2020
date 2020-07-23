@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import {fire, auth, firestore} from '../../firebase.js';
+import React from 'react';
+import { firestore} from '../../firebase.js';
 import {setUpRoom,getIndustries,getSectors,getMarketCaps,initSymbols} from '../firebase-access.jsx'
 import AsyncSelect from 'react-select/async';
 import Select from 'react-select'
@@ -24,70 +24,56 @@ class Config extends React.Component {
           Rounds:null
         };
         this.submitHandler = this.submitHandler.bind(this);
-        this.getIndList = this.getIndList.bind(this);
+        this.getIndustryList = this.getIndustryList.bind(this);
         this.getSectorList = this.getSectorList.bind(this);
         this.getMarketCapList = this.getMarketCapList.bind(this);
       }
-      // async componentDidMount() {  
-      //     this.setState({
-      //         Industries: await getIndustries(firestore),
-      //         Sectors: await getSectors(firestore),
-      //         MarketCaps: await getMarketCaps(firestore),
-      //     });
-      // }
   
-      getIndList = async()=>{
-         
+      getIndustryList = async () => {
           let IndList =await getIndustries(firestore);
           return IndList;
       }
-      getSectorList = async()=>{
-         
+      getSectorList = async () => {
           let SectorList =await getSectors(firestore);
           return SectorList;
       }
-      getMarketCapList = async()=>{
-         
+      getMarketCapList = async () => {
           let CapList =await getMarketCaps(firestore);
           return CapList;
       }
       handleIndustryChange = selectedOption => {
           this.setState({ Industry: selectedOption.value });
-          console.log(`Industry selected:`, selectedOption);
       };
   
       handleSectorChange = selectedOption => {
           this.setState({ Sector: selectedOption.value });
-          console.log(`Sector selected:`, selectedOption);
       };
   
       handleMarketCapChange = selectedOption => {
           this.setState({ MarketCap: selectedOption.value });
-          console.log(`MarketCap selected:`, selectedOption);
       };
-      handleRoundChange = selectedOption =>{
-        this.setState({ Rounds: selectedOption.value });
-        console.log(`Rounds selected:`, selectedOption);
+      handleRoundChange = selectedOption  => {
+          this.setState({ Rounds: selectedOption.value });
       }
       
       submitHandler = async (event) => {
-          event.preventDefault(); // prevent page 
+          event.preventDefault(); // prevent page refresh
+
           const data = new FormData(event.target);
-          console.log(data);
           const Industry = this.state.Industry;
           const Sector = this.state.Sector;
           const MarketCaps = this.state.MarketCap;
           const Rounds = this.state.Rounds;
+
           let num = parseInt(data.get("NumSymbols"), 10);
           const NumOfSymbols  = num ? num : 1;
           let Symbols = []
+
           try {
             Symbols = await initSymbols(firestore,Industry,Sector,MarketCaps,NumOfSymbols);
-          }
-          catch(error) {
+          } catch(error) {
             console.log("Error is "  + error)
           }
-          //TODO: Separate initalize symbols and setuproom functions
           if(Symbols.length)
           {
               let roomID =await setUpRoom(firestore,Symbols,Rounds,'');
@@ -103,17 +89,16 @@ class Config extends React.Component {
         return (
           <form onSubmit={this.submitHandler}>
               
-          <label>Enter number of Symbols:</label>
-                      <input
-                          name="NumSymbols"
-                          type="number"
-                      />
+          <label>(Required)Enter number of Symbols:</label>
+          <input name="NumSymbols" type="number"/>
+          
           <br/>
-          <label>* Select Number of Rounds:</label>
+          <label>(Required)Select Number of Rounds:</label>
           <Select onChange ={this.handleRoundChange} options={ROUNDS}  />
           <br/>
+
           <label>Select Industries:</label>
-          <AsyncSelect onChange={this.handleIndustryChange} cacheOptions defaultOptions loadOptions={this.getIndList} />
+          <AsyncSelect onChange={this.handleIndustryChange} cacheOptions defaultOptions loadOptions={this.getIndustryList} />
   
           <label>Select Sectors:</label>
           <AsyncSelect onChange={this.handleSectorChange} cacheOptions defaultOptions loadOptions={this.getSectorList} />

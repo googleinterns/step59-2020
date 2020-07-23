@@ -1,8 +1,33 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import {db} from "../firebase";
 
 const STARTING_MONEY = 10000;
+
+
+export const addUser = (starting_money,gameId,nickname,numDays,numSymbols) => {
+  const gameRef = db.collection('Rooms').doc(gameId);
+  const userRef = gameRef.collection('users').doc();
+  const userId = userRef.id;
+  const empArray = Array.from(Array(numSymbols),()=>0);
+
+  const gameInfo = {
+      nickname: nickname,
+      net_worth: starting_money,
+      money_left: starting_money,
+      curShares: empArray,
+  }
+  userRef.set(gameInfo);
+
+  for(var i_day = 0; i_day < numDays; i_day++) {
+      var newDoc = userRef.collection('investments').doc(i_day);
+      newDoc.set({
+          change: empArray,
+      });
+  }
+  return userId;
+}
 
 // sets up the room to store symbols, indicator graphs, time series,
 // and default portfolio values
@@ -21,19 +46,6 @@ export const setUpRoom = (db,symbolsL,Rounds,password) => {
       });
       initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
   });
-
-  // const usersRef = roomRef.collection('users');
-  // const userRef = usersRef.doc(userID);
-  // console.log("SetUp room was called")
-
-  // const gameInfo = {
-  //     investments: [],
-  //     personal_value: STARTING_MONEY,
-  //     money_left: STARTING_MONEY,
-  //     gains: 0,
-  //     losses: 0,
-  // }
-  // await fetch(userRef.set(gameInfo));
   return roomID;
 }
 
@@ -117,7 +129,7 @@ function atLeastTwo(a,b,c) {
 }
 // Return a list of symbols used in the configuration process.
 export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
-  let symbols = []
+  let symbols = [];
   if(atLeastTwo(Industry,Sector,MarketCap)){
       //In the case where a person wants to query using multiple features it may return a larger request, 
       //so we send it to the backend
@@ -127,24 +139,23 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       if(Sector)
           formData.append('Sector',Sector);
       if(MarketCap)
-          formData.append('MarketCap',MarketCap)
-      formData.append('NumOfSymbols',NumOfSymbols)
-      console.log("Form Data should look like " + formData)
+          formData.append('MarketCap',MarketCap);
+      formData.append('NumOfSymbols',NumOfSymbols);
       try{
           let response = await fetch('http://localhost:8080/get-symbols', {
               method: 'POST',
               mode: 'cors',
               body: formData
           })
-          let symbolJson = await response.json()
+          let symbolJson = await response.json();
           if (symbolJson.hasOwnProperty("Error")){
               console.log("No Symbols for your query")
-              return symbols
+              return symbols;
           }
-          symbols = symbolJson['symbols']
+          symbols = symbolJson['symbols'];
       }
       catch(error){
-          console.log("Error with Query: " + error)
+          console.log("Error with Query: " + error);
       }
 
   }
@@ -157,21 +168,21 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       let Industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("Industry","==",Industry)
           .where("IndustryPos","<=", cutoff)
-          .orderBy("IndustryPos").limit(NumOfSymbols).get()
+          .orderBy("IndustryPos").limit(NumOfSymbols).get();
       Industries.forEach(function(doc){
-          symbols.push(doc.data().Symbol)
+          symbols.push(doc.data().Symbol);
       })
   }
   else if(MarketCap !== null){
-      let MarketCapInfo =  await db.collection("Ticker-Info").doc("Market-Cap").get();
+      let MarketCapInfo = await db.collection("Ticker-Info").doc("Market-Cap").get();
       let numStocks= MarketCapInfo.data().MarketCap[MarketCap];
       let cutoff = Math.floor((Math.random()  * (numStocks - NumOfSymbols))+NumOfSymbols);
       let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("MarketCapSize","==",MarketCap)
           .where("MarketCapPos","<=", cutoff)
-          .orderBy("MarketCapPos").limit(NumOfSymbols).get()
+          .orderBy("MarketCapPos").limit(NumOfSymbols).get();
       Stocks.forEach(function(doc){
-          symbols.push(doc.data().Symbol)
+          symbols.push(doc.data().Symbol);
       })
   }
   else if(Sector !== null){
@@ -182,9 +193,9 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       let Sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("Sector","==",Sector)
           .where("SectorPos","<=", cutoff)
-          .orderBy("SectorPos").limit(NumOfSymbols).get()
+          .orderBy("SectorPos").limit(NumOfSymbols).get();
       Sectors.forEach(function(doc){
-          symbols.push(doc.data().Symbol)
+          symbols.push(doc.data().Symbol);
       })
 
   }
@@ -240,6 +251,31 @@ export const getSymbols = async (db, roomID) => {
   return symbolData.symbols;
 }
 
+// returns current price for all symbols being tracked
+export const getPrices = async (roomID, dayIndex) => {
+  const roomData = await getRoomData(roomID);
+  const symbolNamesArray = roomData.symbols;
+
+  var prices = [];
+
+  // save all current prices in an array
+  for (var index = 0; index < symbolNamesArray.length; index++) {
+      const currentName = symbolNamesArray[index];
+      const symbolPricesDoc = await db.collection('Rooms').doc(roomID).collection(currentName).doc('Prices').get();
+      const symbolPricesData = symbolPricesDoc.data();
+      const currentPrice = symbolPricesData.prices[dayIndex];
+      prices.push(currentPrice);
+  }
+
+  return prices;
+}
+
+export const getDayIndex = async (roomID) => {
+  const roomData = await getRoomData(roomID);
+  return roomData.day_index;
+}
+
+
 export const getDate = async (db, roomID) => {
   const roomDoc = await db.collection('Rooms').doc(roomID).get();
   const roomData = roomDoc.data();
@@ -268,32 +304,32 @@ export const getCurrentPrice = async (db, roomID) => {
   return prices;
 }
 function compDoc(a, b){
-  if ( a.value < b.value ){
+  if ( a.value < b.value ) {
       return -1;
   }
-  if ( a.value > b.value ){
-  return 1;
+  if ( a.value > b.value ) {
+    return 1;
   }
   return 0;
 }
 
-export const getIndustries = async(db) =>{
+export const getIndustries = async (db) => {
   let Industries = await db.collection("Ticker-Info").doc("Industry").get();
   let IndustryData =  Industries.data().Industry;
   let IndustryList = [];
-  for(const Industry in IndustryData){
+  for(const Industry in IndustryData) {
     IndustryList.push({value: Industry, label: Industry});
   }
   IndustryList.push({value: null, label: "None"});
   IndustryList.sort(compDoc);
-  return IndustryList
+  return IndustryList;
 }
 
-export const getSectors = async(db) =>{
+export const getSectors = async (db) => {
   let Sectors = await db.collection("Ticker-Info").doc("Sector").get();
   let SectorData =  Sectors.data().Sector;
   let SectorList = [];
-  for(const Sector in SectorData){
+  for(const Sector in SectorData) {
     SectorList.push({value: Sector, label: Sector});
   }
   SectorList.push({value: null, label:"None"});
@@ -301,11 +337,11 @@ export const getSectors = async(db) =>{
   return SectorList;
 }
 
-export const getMarketCaps = async(db) =>{
+export const getMarketCaps = async (db) => {
   let MarketCaps = await db.collection("Ticker-Info").doc("Market-Cap").get();
   let MarketCapData =  MarketCaps.data().MarketCap;
   let MarketCapList = [];
-  for(const Stock in MarketCapData){
+  for(const Stock in MarketCapData) {
     MarketCapList.push({value: Stock, label: Stock});
   }
   MarketCapList.push({value: null, label:"None"});
@@ -331,24 +367,107 @@ export const advanceDay = async (db, roomID) => {
 }
 
 // logs an investment in the database
-export const makeInvestment = async (db, roomID, userID, symbolIndex, price, num_shares) => {
-  const invJSON = {
-    "symbol_index": symbolIndex,
-    "share_price": price,
-    "num_shares": num_shares,
-    "total_purchase_price": (price * num_shares)
-  }
+export const getUserData = async (roomID, userID) => {
+  await updateNetWorth(roomID,userID);
+  return await db.collection('Rooms').doc(roomID).collection('users').doc(userID).get().data();
+}
 
-  const userRef = db.collection('Rooms').doc(roomID)
-    .collection('users').doc(userID);
+export const getUserRef = (roomID, userID) => {
+  return db.collection('Rooms').doc(roomID).collection('users').doc(userID);
+}
 
-  const moneySpent = (price * num_shares) * -1;
+export const verifyOk = async (roomID, userID, dayIndex, changeArray, prices) => {
 
-  // add investment and update money_left
-  userRef.update({
-    investments: firebase.firestore.FieldValue.arrayUnion(invJSON),
-    money_left: firebase.firestore.FieldValue.increment(moneySpent)
+  var consistentInvestment = true;
+  const userRef = getUserRef(roomID, userID);
+  const userData = await getUserData(roomID, userID);
+
+  var curArray = userData.curShares;
+  var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
+  consistentInvestment = consistentInvestment && sum.every((e) => e>=0);
+
+  //check cash ok
+  var totalMoney = userData.money_left;
+  var moneySpentArr = prices.map(function(price,idx) {totalMoney -= price * changeArray[idx];});
+  consistentInvestment = consistentInvestment && totalMoney >= 0;
+
+  return consistentInvestment;
+}
+
+export const changeCash = async (roomID, userID, dayIndex, changeArray, prices) => {
+  const userRef = getUserRef(roomID, userID);
+  const userData = await getUserData(roomID,userID);
+  var totalMoney = userData.money_left;
+  prices.map(function(num,idx) {totalMoney -= num * changeArray[idx];});
+  userRef.update({money_left: totalMoney});
+}
+
+export const changeShares = async (roomID, userID, dayIndex, changeArray) => {
+  const userRef = getUserRef(roomID, userID);
+  const investRef = userRef.collection('investments').doc(dayIndex);
+  const userData = await getUserData(roomID,userID);
+  //update curShares array
+  var curArray = userData.curShares;
+  var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
+  userRef.update({curShares: sum});
+
+  //update
+  //TODO: current have a separate call for investment. Consider accessing it through userData to save time
+  investRef.get().then(function(investDoc) {
+      if (investDoc.exists) {
+          var investData = investDoc.data();
+          var curArray = investData.change;
+          var sum = curArray.map(function(num,idx) {
+              return num + changeArray[idx];
+          });
+          investRef.update({
+              change: sum,
+          });
+      }
   });
+}
+
+export const makeInvestment = async (roomID, userID, dayIndex, changeArray) => {
+  const prices = await getPrices(roomID, dayIndex);
+
+  if (!(await verifyOk(roomID,userID,dayIndex,changeArray,prices))) return false;
+
+  changeCash(roomID,userID,dayIndex,changeArray,prices);
+  changeShares(roomID,userID,dayIndex,changeArray);
+
+  return true;
+}
+export const getShares = async (roomID, userID) => {
+  const userData = await getUserData(roomID,userID);
+  return userData.currentShares;
+}
+
+export const getCash = async (roomID, userID) => {
+  const userData = await getUserData(roomID,userID);
+  return userData.money_left;
+}
+
+export const getRoomData = async (roomID) => {
+  return await db.collection('Rooms').doc(roomID).get().data();
+}
+
+export const getNetWorth = async (roomID, userID) => {
+  await updateNetWorth(roomID, userID);
+  const userData = await getUserData(roomID, userID);
+  return userData.net_worth;
+}
+
+//TODO: this method can be called many times, which leads to latency due to a lot of awaits. See if can pass userData from other methods
+export const updateNetWorth = async (roomID, userID) => {
+  const dayIndex = await getDayIndex(roomID);
+  const prices = await getPrices(roomID, dayIndex);
+  const userData = await getUserData(roomID, userID);
+  const userRef = getUserRef(roomID, userID);
+  const curShares = userData.curShares;
+  var netWorth = userData.money_left;
+  curShares.map((numShares,idx) => {netWorth += numShares * prices[idx];});
+  if (userData.net_worth == netWorth) return;
+  await userRef.update({net_worth: netWorth});
 }
 
 // retrieves symbol name given the symbol's index
