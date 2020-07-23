@@ -115,6 +115,7 @@ export const initDates = async (db, symbols, Rounds) => {
 function atLeastTwo(a,b,c) {
   return a ? (b || c) : (b && c);
 }
+
 // Return a list of symbols used in the configuration process.
 export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
   let symbols = []
