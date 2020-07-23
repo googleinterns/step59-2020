@@ -165,7 +165,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
   }
   else if(MarketCap !== null){
       let MarketCapInfo =  await db.collection("Ticker-Info").doc("Market-Cap").get();
-      let numStocks= MarketCapInfo.data().MarketCap[MarketCap];
+      let numStocks = MarketCapInfo.data().MarketCap[MarketCap];
       let cutoff = Math.floor((Math.random()  * (numStocks - NumOfSymbols))+NumOfSymbols);
       let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("MarketCapSize","==",MarketCap)
