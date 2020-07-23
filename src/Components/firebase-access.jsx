@@ -269,7 +269,8 @@ export const getCurrentPrice = async (db, roomID) => {
 
   return prices;
 }
-function compDoc(a, b){
+
+function compDoc(a, b) {
   if ( a.value < b.value ){
       return -1;
   }
