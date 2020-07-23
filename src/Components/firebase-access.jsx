@@ -144,7 +144,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
           symbols = symbolJson['symbols']
       }
       catch(error){
-          console.log("Error with Query: " + error)
+          console.log("Error with Query: " + error);
       }
 
   }
