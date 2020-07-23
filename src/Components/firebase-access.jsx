@@ -135,7 +135,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
               method: 'POST',
               mode: 'cors',
               body: formData
-          })
+          });
           let symbolJson = await response.json()
           if (symbolJson.hasOwnProperty("Error")){
               console.log("No Symbols for your query")
