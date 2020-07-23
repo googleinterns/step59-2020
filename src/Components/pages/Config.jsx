@@ -74,13 +74,11 @@ class Config extends React.Component {
           } catch(error) {
             console.log("Error is "  + error)
           }
-          if(Symbols.length)
-          {
+          if(Symbols.length) {
               let roomID =await setUpRoom(firestore,Symbols,Rounds,'');
               this.props.updatePageType('created',roomID);
           }
-          else
-          {
+          else {
               alert("No Symbols match your query");
           }
       }
