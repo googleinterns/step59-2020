@@ -16,7 +16,7 @@ export const addUser = (starting_money,gameId,nickname,numDays,numSymbols) => {
       nickname: nickname,
       net_worth: starting_money,
       money_left: starting_money,
-      curShares: empArray,
+      currentShares: empArray,
   }
   userRef.set(gameInfo);
 
@@ -49,13 +49,12 @@ export const setUpRoom = (db,symbolsL,Rounds,password) => {
   return roomID;
 }
 
-export const getUserShares = async (db, roomID, userID) => {
-  const userRef = db.collection('Rooms').doc(roomID)
-    .collection('users').doc(userID);
-
-  const userDoc = await userRef.get();
-  const userData = userDoc.data();
-  return userData.investments;
+export const getUserShares = async (db, roomID, userID, dayIndex) => {
+  const userInvRef = db.collection('Rooms').doc(roomID)
+    .collection('users').doc(userID).collection('investments').doc(dayIndex);
+  const userInvDoc =  await userInvRef.get();
+  const invDocData = userInvDoc.data();
+  return invDocData.change;
 }
 
 export const getUserBalance = async (db, roomID, userID) => {
@@ -366,27 +365,28 @@ export const advanceDay = async (db, roomID) => {
   }
 }
 
-// logs an investment in the database
+// gets user document data
 export const getUserData = async (roomID, userID) => {
-  await updateNetWorth(roomID,userID);
-  return await db.collection('Rooms').doc(roomID).collection('users').doc(userID).get().data();
+  const userDoc = await db.collection('Rooms').doc(roomID).collection('users').doc(userID).get();
+  return userDoc.data();
 }
 
 export const getUserRef = (roomID, userID) => {
   return db.collection('Rooms').doc(roomID).collection('users').doc(userID);
 }
 
+// verify that the user has enough money/shares to complete trade
 export const verifyOk = async (roomID, userID, dayIndex, changeArray, prices) => {
 
   var consistentInvestment = true;
   const userRef = getUserRef(roomID, userID);
   const userData = await getUserData(roomID, userID);
 
-  var curArray = userData.curShares;
-  var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
-  consistentInvestment = consistentInvestment && sum.every((e) => e>=0);
+  var curArray = userData.currentShares;
+  var sum = curArray.map(function(num, idx) {return num + changeArray[idx];});
+  consistentInvestment = consistentInvestment && sum.every((e) => e >= 0);
 
-  //check cash ok
+  // check cash ok
   var totalMoney = userData.money_left;
   var moneySpentArr = prices.map(function(price,idx) {totalMoney -= price * changeArray[idx];});
   consistentInvestment = consistentInvestment && totalMoney >= 0;
@@ -404,15 +404,15 @@ export const changeCash = async (roomID, userID, dayIndex, changeArray, prices) 
 
 export const changeShares = async (roomID, userID, dayIndex, changeArray) => {
   const userRef = getUserRef(roomID, userID);
-  const investRef = userRef.collection('investments').doc(dayIndex);
+  const investRef = userRef.collection('investments').doc(dayIndex.toString());
   const userData = await getUserData(roomID,userID);
-  //update curShares array
-  var curArray = userData.curShares;
-  var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
-  userRef.update({curShares: sum});
 
-  //update
-  //TODO: current have a separate call for investment. Consider accessing it through userData to save time
+  // update currentShares array
+  var curArray = userData.currentShares;
+  var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
+  userRef.update({currentShares: sum});
+
+  // TODO: current have a separate call for investment. Consider accessing it through userData to save time
   investRef.get().then(function(investDoc) {
       if (investDoc.exists) {
           var investData = investDoc.data();
@@ -434,10 +434,11 @@ export const makeInvestment = async (roomID, userID, dayIndex, changeArray) => {
 
   changeCash(roomID,userID,dayIndex,changeArray,prices);
   changeShares(roomID,userID,dayIndex,changeArray);
+  updateNetWorth(roomID, userID, dayIndex, prices);
 
   return true;
 }
-export const getShares = async (roomID, userID) => {
+export const getCurrentShares = async (roomID, userID) => {
   const userData = await getUserData(roomID,userID);
   return userData.currentShares;
 }
@@ -448,26 +449,24 @@ export const getCash = async (roomID, userID) => {
 }
 
 export const getRoomData = async (roomID) => {
-  return await db.collection('Rooms').doc(roomID).get().data();
+  const roomDoc = await db.collection('Rooms').doc(roomID).get();
+  return roomDoc.data();
 }
 
 export const getNetWorth = async (roomID, userID) => {
-  await updateNetWorth(roomID, userID);
   const userData = await getUserData(roomID, userID);
   return userData.net_worth;
 }
 
-//TODO: this method can be called many times, which leads to latency due to a lot of awaits. See if can pass userData from other methods
-export const updateNetWorth = async (roomID, userID) => {
-  const dayIndex = await getDayIndex(roomID);
-  const prices = await getPrices(roomID, dayIndex);
+export const updateNetWorth = async (roomID, userID, dayIndex, prices) => {
   const userData = await getUserData(roomID, userID);
   const userRef = getUserRef(roomID, userID);
-  const curShares = userData.curShares;
+
+  const currentShares = userData.currentShares;
   var netWorth = userData.money_left;
-  curShares.map((numShares,idx) => {netWorth += numShares * prices[idx];});
-  if (userData.net_worth == netWorth) return;
-  await userRef.update({net_worth: netWorth});
+
+  currentShares.map((numShares,idx) => {netWorth += numShares * prices[idx];});
+  userRef.update({net_worth: netWorth});
 }
 
 // retrieves symbol name given the symbol's index
