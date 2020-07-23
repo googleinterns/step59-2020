@@ -148,6 +148,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       }
 
   }
+
   // All of the rest of the values use a search by Xpos to make the query as small as possible(O(numOfSymbols))
   else if(Industry !== null){
 
