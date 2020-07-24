@@ -1,4 +1,13 @@
 import React, { Component } from 'react';
+
+import {firestore} from '../../../firebase';
+import {getUserID} from '../../../firebase';
+
+import {getCurrentShares} from '../../firebase-access';
+import {getCash} from '../../firebase-access';
+import {verifyOk} from '../../firebase-access';
+import {makeInvestment} from '../../firebase-access';
+import {getNetWorth} from '../../firebase-access';
  
 /*
 inherited from Play:
@@ -6,6 +15,7 @@ inherited from Play:
   - roomID
   - symbols array
   - prices array
+  - dayIndex
  
 what Quiz does:
   - retrieves and displays user information
@@ -17,9 +27,12 @@ what Quiz does:
   - create changeArray to record investment in firestore
 */
  
-// TODO: get this data from firestore
-const NUM_SYMBOLS = 3;
-const BALANCE = 1000;
+// TODO: get this data from parent
+const NUM_SYMBOLS = 2;
+const DAY_INDEX = 0;
+const ROOMID = 'f82Cnzhyhs54aRWKKVaA';
+const USERID = '1K8yFtgBkrFr8FMd05YT';
+const CHARTURL = 'something';
  
 const BUY = "BUY";
 const SELL = "SELL";
@@ -31,15 +44,24 @@ class Quiz extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          userBalance: BALANCE,  // call getUserCash
+          userID: USERID,//getUserID(),
+          userBalance: null,
+          netWorth: null,
+          userShares: [],
           formInput: []
         };
     }
+
+    async componentDidMount () {
+        this.setState({
+            userBalance: await getCash(ROOMID, this.state.userID),
+            userShares: await getCurrentShares(ROOMID, this.state.userID),
+            netWorth: await getNetWorth(ROOMID, this.state.userID)
+        });       
+    }
  
-    // TODO: use firestore methods
-    getPrice = (symbolIndex) => {return 10;}
-    getShares = (symbolIndex) => {return 1;}
-    getBalance = () => {return BALANCE;}
+    // TODO: get from parent
+    getPrice = (symbolIndex) => {return 30;}
  
     getAvailableSymbols = () => {
         let content = [];
@@ -49,13 +71,13 @@ class Quiz extends Component {
         return content;
     }
  
-    addRowToFormData = () => {
+    addRowToFormData = (index) => {
         const dataJSON = {
             BUY: null,
             HOLD: null,
             SELL: null
         };
-        this.state.formInput.push(dataJSON);
+        this.state.formInput[index] = dataJSON;
     }
  
     getSymbolData = () => {
@@ -65,8 +87,8 @@ class Quiz extends Component {
         // also present the BUY/HOLD/SELL options
         for (let i = 0; i < NUM_SYMBOLS; i++) {
             const currentPrice = this.getPrice(i);
-            const numShares = this.getShares(i);
- 
+            const numShares = this.state.userShares[i];
+
             const toRender = (
                 <div key={i}>
                     <p>Symbol{i}:</p>
@@ -84,7 +106,7 @@ class Quiz extends Component {
                 </div>
             );
             rows.push(toRender);
-            this.addRowToFormData();
+            this.addRowToFormData(i);
         }
  
         return rows;
@@ -134,7 +156,6 @@ class Quiz extends Component {
     // parse form submission results and convert into a changeArray (for firestore)
     parseResults = () => {
         var changeArray = [];
- 
         for (let i = 0; i < this.state.formInput.length; i++) {
             const currentRow = this.state.formInput[i];
  
@@ -152,13 +173,19 @@ class Quiz extends Component {
                 break;
             }
         }
- 
-        // TODO: call makeInvestment (firestore access) with changeArray
+        
+        this.validate(changeArray);
+        makeInvestment(ROOMID, this.state.userID, DAY_INDEX, changeArray);
+        alert('investment recorded');
     }
  
-    validate = (event) => {
-        // TODO: call verifyOK (firestore access method) to verify
-        // user input onChange
+    validate = async (changeArray) => {
+        // TODO: use parent component's access to price to verify onSubmit
+        
+        //const res = await verifyOk(ROOMID, this.state.userID, DAY_INDEX, changeArray, /*put price here*/);
+        //if (!res) {
+        //    alert('You attempted to make an invalid trade. Please reenter.');
+        //}
     }
  
  
@@ -171,10 +198,10 @@ class Quiz extends Component {
  
         return (
             <div>
- 
                 <p>Available symbols are:</p>
                 <ul>{this.getAvailableSymbols()}</ul>
-                <p>Current Balance is {this.getBalance()}</p>
+                <p>Your current balance is {this.state.userBalance}</p>
+                <p>Your net worth is {this.state.netWorth}.</p>
                 <br/>
  
                 <form onSubmit={this.submitHandler}>
@@ -182,7 +209,6 @@ class Quiz extends Component {
                     <br/><br/>
                     <input type="submit"/>
                 </form>
-            
             </div>
         );
     }
