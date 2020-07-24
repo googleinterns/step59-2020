@@ -277,7 +277,6 @@ export const getCharts = async (roomID, dayIndex) => {
     var charts = {};
     for(var i = 0; i < numSymbols; i++) {
         charts[i] = await getChartUrls(roomID,await getSymbolNameFromIndex(roomID,i),dayIndex);
-        console.log("GET CHARTS =============================================" + charts[i][0]);
     }
     return charts;
 }
@@ -286,8 +285,6 @@ export const getChartUrls = async (roomID, symbol, dayIndex) => {
     const endDate = await getDateFromIndex(roomID, dayIndex);
     let images = await db.collection('Rooms').doc(roomID).collection(symbol).doc('images').get();
     let imagesData = images.data();
-    console.log("IMAGES");
-    console.log(imagesData);
     return [imagesData["Stockpublic_image_url"][endDate],imagesData["ADXpublic_image_url"][endDate],
         imagesData["MACDpublic_image_url"][endDate],imagesData['RSIpublic_image_url'][endDate]];
 }
@@ -376,14 +373,11 @@ export const getSymbols = async (roomID) =>{
 }
 
 export const getUserData = async (roomID, userID) => {
-    console.log("getUserData ckpoint 2");
     var userData;
     const userRef = getUserRef(roomID,userID);
-    console.log("getUserData ckpoint 3");
     await userRef.get().then((doc) => {
         userData = doc.data();
     });
-    console.log("getUserData ckpoint 4");
     return userData;
 }
 
