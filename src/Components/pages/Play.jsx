@@ -4,13 +4,10 @@ import {Quiz} from '../quiz/play/Quiz.jsx';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
+import {addUser,getCharts,getSymbols,getDayIndex,getPrices,getUserData,getUserRef,makeInvestment,
+    getCash,getShares,getRoomData,getRoomRef,getNetWorth} from '../firebase-access.jsx';
 import {Helmet} from 'react-helmet';
 import {isRedirect} from "@reach/router";
-
-
-function fetchGame(gameId,callback) {
-    fire.database().ref('/Rooms').orderByChild('gameId').equalTo(gameId).once('value',callback);
-}
 
 class Play extends Component {
 
@@ -27,24 +24,34 @@ class Play extends Component {
     constructor (props) {
         super(props);
         this.state = {
-            game: {},
-            gameId: null,
+            //static properties
+            roomId: null,
             password: '',
-            phase: 'not-joined',
-            nickname: '',
             userId: '',
+            nickname: '',
+            numSymbols: 0,
+
+            //frequently updated properties
+            phase: 'not-joined',
             questionNum: 0,
-            chartURLs: [],
-            technicalIndicators: [],
-            currentCash: 0,
-            currentShares: [],
-            currentPrice: null,
+            chartURLs: null,
+            net_worth: 0,
+            money_left: [],
+            curShares: [],
+            prices: [],
         };
-        this.addUser = this.addUser.bind(this);
+        this.updatePortfolio = this.updatePortfolio.bind(this);
         this.joinGame = this.joinGame.bind(this);
         this.initGameListener = this.initGameListener.bind(this);
+        this.debug = this.debug.bind(this);
     }
 
+    debug(str) {
+        console.log(str);
+    }
+
+    componentDidMount() {
+    }
 
     handleChangeSelect = (event) => {
         this.setState({ [event.target.name]: event.target.value });
@@ -56,80 +63,84 @@ class Play extends Component {
         });
     };
 
-    initGameListener() {
-        const that = this;
-        const {questionNum,gameId,phase,nickname} = this.state;
-        const gameRef = db.collection('Rooms').doc(gameId);
-        gameRef.onSnapshot(function(gameData) {
-            const curQuestionNum = gameData.data().day_index;
-            const curPhase = gameData.data().phase;
-            if (questionNum != curQuestionNum) {
-                that.setState({
-                    questionNum: curQuestionNum + 1,
-                });
-                //TODO: fetch question data
-            }
-            if (phase !== curPhase) {
-                that.setState({
-                    phase: curPhase,
-                });
+    async updatePortfolio() {
+        const {roomId,userId} = this.state;
+        var roomData = await getRoomData(roomId);
+        var userData = await getUserData(roomId,userId);
+        var chartUrls = await getCharts(roomId,roomData.day_index);
+        var prices = await getPrices(roomId,roomData.day_index);
 
-            }
+        this.setState({
+            questionNum: roomData.day_index,
+            chartUrls: chartUrls,
+            prices: prices,
+            net_worth: userData.net_worth,
+            money_left: userData.money_left,
+            curShares: userData.curShares,
         });
     }
 
-    joinGame() {
-        const {gameId,password,nickname} = this.state;
+    async makeInvestmentWrapper(changeArray) {
         const that = this;
-        const gameRef = db.collection('Rooms').doc(gameId);
-        gameRef.get().then(function(gameData) {
-            if (gameData.exists) {
-                var gameInfo = gameData.data();
-                if (gameInfo.password === password && gameInfo.phase === 'connection') {
-                    var uniqueUserId = that.addUser(nickname,gameInfo.starting_money);
+        await that.updatePortfolio();
+        const {roomId,userId,questionNum} = this.state;
+        var successful = await makeInvestment(roomId,userId,questionNum,changeArray);
+        return successful;
+    }
+
+    async initGameListener() {
+        const that = this;
+        const {questionNum,roomId,phase,nickname,userId} = this.state;
+        const roomRef = db.collection('Rooms').doc(roomId);
+        const userRef = roomRef.collection('users').doc(userId);
+        roomRef.onSnapshot(await async function(roomDoc) {
+            const roomData = roomDoc.data();
+            if (questionNum != roomData.day_index || phase != roomData.phase) {
+                await that.updatePortfolio();
+                that.setState({
+                    phase: roomData.phase,
+                })
+            }
+        });
+        userRef.onSnapshot(await async function(userDoc) {
+            await that.updatePortfolio();
+        });
+    }
+
+    async joinGame() {
+        const {roomId,password,nickname} = this.state;
+        const that = this;
+        const roomRef = db.collection('Rooms').doc(roomId);
+        await roomRef.get().then(await async function(roomData) {
+            if (roomData.exists) {
+                var roomInfo = roomData.data();
+                if (roomInfo.password === password && roomInfo.phase === 'connection') {
+                    console.log("room entered");
+                    var uniqueUserId = await addUser(roomId,nickname);
                     that.setState({
                         phase: 'connection',
                         userId: uniqueUserId,
-                        net_worth: gameInfo.starting_money,
-                        cash: gameInfo.starting_money,
+                        numSymbols: roomInfo.symbols.length,
+                        net_worth: roomInfo.starting_money,
+                        money_left: roomInfo.starting_money,
                     });
-                    that.initGameListener();
-
-                } else if (gameInfo.password === password) {
-                    console.log("game not being hosted yet");
-                } else if (gameInfo.phase === 'connection') {
+                    await that.initGameListener();
+                    await that.updatePortfolio();
+                } else if (roomInfo.password === password) {
+                    console.log("room not being hosted yet");
+                } else if (roomInfo.phase === 'connection') {
                     console.log("incorrect password");
                 } else {
-                    console.log("game does not exist");
+                    console.log("room does not exist");
                 }
             } else {
-                console.log("room " + gameId + " does not exist");
+                console.log("room " + roomId + " does not exist");
             }
         });
     }
 
-    addUser(starting_money) {
-        const {gameId,nickname} = this.state;
-        const gameRef = db.collection('Rooms').doc(gameId);
-        const userRef = gameRef.collection('users').doc();
-        const userId = userRef.id;
-
-        const gameInfo = {
-            nickname: nickname,
-            investments: [],
-            personal_value: starting_money,
-            money_left: starting_money,
-            gains: 0,
-            losses: 0,
-        }
-
-        userRef.set(gameInfo);
-        return userId;
-    }
-
     render () {
-        const {game,phase,password,nickname,playerKey,questionNum,gameId,recentGameId,recentGame,isRedirected,gametype} = this.state;
-        console.log(questionNum);
+        const {phase,password,nickname,playerKey,questionNum,roomId,isRedirected} = this.state;
         if (phase === 'not-joined') {
             return (
                 <div className="page-container play-page">
@@ -139,7 +150,7 @@ class Play extends Component {
                                        onChange={this.handleChange('nickname')}/>
                         </FormControl>
                         <FormControl>
-                            <TextField label="Game PIN" name="Game ID" value={gameId} onChange={this.handleChange('gameId')}/>
+                            <TextField label="Game PIN" name="Game ID" value={roomId} onChange={this.handleChange('roomId')}/>
                         </FormControl>
                         <FormControl>
                             <TextField label="Password" type="password" name="password" value={password}
@@ -158,17 +169,16 @@ class Play extends Component {
         } else if (phase === 'question') {
             return (
                 <div>
-                    <span>Current question: </span>
-                    {' '}
-                    <span className="dynamic-text">{questionNum}</span>
-                    <p> (question info will be displayed here) </p>
-                    <button> Buy </button>
-                    <button> Sell </button>
-                    <button> Hold </button>
+                    <Quiz {...this.state}></Quiz>
+                </div>
+            )
+        } else if (phase === 'ended') {
+            return (
+                <div>
+                    <p> Game has ended </p>
                 </div>
             )
         }
-
     }
 }
 
