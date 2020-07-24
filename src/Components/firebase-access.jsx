@@ -57,15 +57,6 @@ export const getUserShares = async (db, roomID, userID, dayIndex) => {
   return invDocData.change;
 }
 
-export const getUserBalance = async (db, roomID, userID) => {
-  const userRef = db.collection('Rooms').doc(roomID)
-    .collection('users').doc(userID);
-
-  const userDoc = await userRef.get();
-  const userData = userDoc.data();
-  return userData.money_left;
-}
-
 export const getChartUrl = async (db, roomID, symbol, endDate) => {
   let images = await db.collection('Rooms').doc(roomID).collection(symbol).doc('images').get();
   let imagesData = images.data();
@@ -464,7 +455,6 @@ export const updateNetWorth = async (roomID, userID, dayIndex, prices) => {
 
   const currentShares = userData.currentShares;
   var netWorth = userData.money_left;
-
   currentShares.map((numShares,idx) => {netWorth += numShares * prices[idx];});
   userRef.update({net_worth: netWorth});
 }

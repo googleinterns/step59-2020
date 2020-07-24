@@ -3,13 +3,11 @@ import React, { Component } from 'react';
 import {firestore} from '../../../firebase';
 import {getUserID} from '../../../firebase';
 
-//import {getPrices} from '../../firebase-access';
 import {getCurrentShares} from '../../firebase-access';
-import {getUserBalance} from '../../firebase-access';
-//import {getDayIndex} from '../../firebase-access';
+import {getCash} from '../../firebase-access';
 import {verifyOk} from '../../firebase-access';
 import {makeInvestment} from '../../firebase-access';
-
+import {getNetWorth} from '../../firebase-access';
  
 /*
 inherited from Play:
@@ -30,10 +28,11 @@ what Quiz does:
 */
  
 // TODO: get this data from parent
-const NUM_SYMBOLS = 1;
+const NUM_SYMBOLS = 2;
 const DAY_INDEX = 0;
-const ROOMID = '8k6e0MCCC5lZbMXpD5hM';
-const USERID = 'XDTyJ8KOv31UhM3QXIoN';
+const ROOMID = 'f82Cnzhyhs54aRWKKVaA';
+const USERID = '1K8yFtgBkrFr8FMd05YT';
+const CHARTURL = 'something';
  
 const BUY = "BUY";
 const SELL = "SELL";
@@ -45,22 +44,20 @@ class Quiz extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          userID: getUserID(),
-          userBalance: null,  // call getUserCash
+          userID: USERID,//getUserID(),
+          userBalance: null,
+          netWorth: null,
           userShares: [],
           formInput: []
         };
-
-        this.init();
     }
 
-    // initializes values retrieved from database
-    init = async () => {
-
+    async componentDidMount () {
         this.setState({
-            userBalance: await getUserBalance(firestore, ROOMID, this.state.userID),
-            userShares: await getCurrentShares(ROOMID, this.state.userID)
-        });
+            userBalance: await getCash(ROOMID, this.state.userID),
+            userShares: await getCurrentShares(ROOMID, this.state.userID),
+            netWorth: await getNetWorth(ROOMID, this.state.userID)
+        });       
     }
  
     // TODO: get from parent
@@ -201,10 +198,10 @@ class Quiz extends Component {
  
         return (
             <div>
- 
                 <p>Available symbols are:</p>
                 <ul>{this.getAvailableSymbols()}</ul>
-                <p>Current Balance is {this.state.userBalance}</p>
+                <p>Your current balance is {this.state.userBalance}</p>
+                <p>Your net worth is {this.state.netWorth}.</p>
                 <br/>
  
                 <form onSubmit={this.submitHandler}>
@@ -212,7 +209,6 @@ class Quiz extends Component {
                     <br/><br/>
                     <input type="submit"/>
                 </form>
-            
             </div>
         );
     }
