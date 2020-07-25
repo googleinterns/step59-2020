@@ -4,6 +4,8 @@ import pandas as pd
 from datetime import date,datetime
 from dateutil.relativedelta import relativedelta
 import os
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 '''
