@@ -48,7 +48,6 @@ class Host extends Component {
         this.restartGame = this.restartGame.bind(this);
         this.quitGame = this.quitGame.bind(this);
         this.endGame = this.endGame.bind(this);
-        this.debug = this.debug.bind(this);
     }
 
     componentDidMount() {
@@ -71,15 +70,9 @@ class Host extends Component {
     userExists(userId) {
         const {users} = this.state;
         var exists = false;
-        console.log("type of users: " + typeof(users));
         Array.from(users).forEach(function(item) {
-            console.log("item ID " + item.userId);
-            console.log("checked user ID " + userId);
             if (item.userId == userId) {
-                console.log("they are equal");
                 exists = true;
-            } else {
-                console.log(item.userId + " and " + userId + " are not equal");
             }
         });
         return exists;
@@ -116,10 +109,7 @@ class Host extends Component {
             snapshot.docs.forEach(user => {
                 var userData = user.data();
                 const userExistsBool = that.userExists(userData.userId);
-                console.log("userExistsBool value is " + userExistsBool);
                 if (userExistsBool == false) {
-                    console.log("adding new user");
-                    console.log("user id is " + userData.userId);
                     that.setState({
                         users: that.state.users.concat([userData]),
                     })
@@ -133,20 +123,15 @@ class Host extends Component {
         const that = this;
         var roomRef = getRoomRef(roomId);
         var roomData = await getRoomData(roomId);
-        if (roomData != null) {
-            console.log(roomData);
+        if (!roomData) {
             if (roomData.password === password && roomData.phase === 'no-host') {
                 that.setState({
                     authenticated: 'yes',
                     phase: 'connection',
                 });
-                that.debug("ckpoint 1 host");
                 await addUser(roomId,"dummy user");
-                that.debug("ckpoint 2 host");
                 await that.updateUsers();
-                that.debug("ckpoint 3 host");
                 await that.initGameListener();
-                that.debug("ckpoint 4 host");
                 roomRef.update({
                     phase: 'connection',
                 });
@@ -155,10 +140,10 @@ class Host extends Component {
                     numDays: numDays,
                 })
             } else {
-                console.log("wrong password");
+                alert("wrong password");
             }
         } else {
-            console.log("room " + roomId + " does not exist");
+            alert("room " + roomId + " does not exist");
         }
     }
 

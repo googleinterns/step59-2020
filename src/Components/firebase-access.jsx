@@ -3,7 +3,7 @@ import "firebase/auth";
 import "firebase/firestore";
 import {db} from "../firebase";
 
-export const addUser = async (roomID,nickname) => {
+export const addUser = async (roomID, nickname) => {
 
     //TODO add user authentication
 
@@ -33,9 +33,13 @@ export const addUser = async (roomID,nickname) => {
     return userID;
 }
 
+function atLeastTwo(a,b,c) {
+    return a ? (b || c) : (b && c);
+}
+
 export const changeCash = async (roomID, userID, dayIndex, changeArray, prices) => {
     const userRef = getUserRef(roomID, userID);
-    const userData = await getUserData(roomID,userID);
+    const userData = await getUserData(roomID, userID);
     var totalMoney = userData.money_left;
     prices.map(function(num,idx) {totalMoney -= num * changeArray[idx];});
     userRef.update({money_left: totalMoney});
@@ -44,19 +48,18 @@ export const changeCash = async (roomID, userID, dayIndex, changeArray, prices) 
 export const changeShares = async (roomID, userID, dayIndex, changeArray) => {
     const userRef = getUserRef(roomID, userID);
     const investRef = userRef.collection('investments').doc(dayIndex.toString());
-    const userData = await getUserData(roomID,userID);
-    //update curShares array
+    const userData = await getUserData(roomID, userID);
+    // Update curShares array
     var curArray = userData.curShares;
-    var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
+    var sum = curArray.map(function(num, idx) {return num + changeArray[idx];});
     userRef.update({curShares: sum});
 
-    //update
     //TODO: current have a separate call for investment. Consider accessing it through userData to save time
     investRef.get().then(function(investDoc) {
         if (investDoc.exists) {
             var investData = investDoc.data();
             var curArray = investData.change;
-            var sum = curArray.map(function(num,idx) {
+            var sum = curArray.map(function(num, idx) {
                 return num + changeArray[idx];
             });
             investRef.update({
@@ -66,10 +69,9 @@ export const changeShares = async (roomID, userID, dayIndex, changeArray) => {
     });
 }
 
-// Minimum Period is 1Month
 export const initDates = async (symbols, Rounds) => {
-    let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-        .where("Symbol","in",symbols).get()
+    let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+        .where("Symbol","in", symbols).get();
     let IPOyearMax = 0;
     let today = new Date();
     let year = today.getFullYear();
@@ -81,19 +83,19 @@ export const initDates = async (symbols, Rounds) => {
 
     // No more than 7 rounds(Periods are measured in months)
     let min_window_size = 3;
-    let yearDiff = year - (IPOyearMax+1);
+    let yearDiff = year - (IPOyearMax + 1);
     let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
-    let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size))+min_window_size);
-    let startDate = new Date(IPOyearMax+1,1,1);
-    let endDate =  new Date(IPOyearMax+1,1+random_period,1);
-    let rand_startDate =  randomDate(startDate,endDate);
+    let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size)) + min_window_size);
+    let startDate = new Date(IPOyearMax + 1, 1, 1);
+    let endDate =  new Date(IPOyearMax + 1, 1 + random_period, 1);
+    let rand_startDate = randomDate(startDate,endDate);
     let dates = [];
     let curr_date = rand_startDate;
     for(var i = 0; i < Rounds; i++) {
         dates.push(curr_date.toISOString().substring(0, 10));
-        curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
+        curr_date = new Date(curr_date.setMonth(curr_date.getMonth() + random_period));
     }
-    const datesD ={
+    const datesD = {
         "dates" : dates,
         "period": random_period
     }
@@ -103,14 +105,14 @@ export const initDates = async (symbols, Rounds) => {
 export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
     var formData = new FormData();
     formData.append('symbol',JSON.stringify(symbols));
-    formData.append('RoomId',roomId);
+    formData.append('RoomId', roomId);
     formData.append('end-date',JSON.stringify(endDates));
     try{
         await fetch('http://localhost:8080/get-prices', {
             method: 'POST',
             mode: 'cors',
             body: formData
-        })
+        });
     }
     catch(err) {
         console.log("Error is " +  err)
@@ -128,45 +130,60 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
     }
 }
 
-export const initSymbols = async(Industry,Sector,NumOfSymbols) =>{
-    let symbols = []
-    if(Sector !== null && Industry !== null){
-
+export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
+    let symbols = [];
+    if(atLeastTwo(Industry,Sector,MarketCap)){
+        //In the case where a person wants to query using multiple features it may return a larger request,
+        //so we send it to the backend
         let formData = new FormData();
-        formData.append('Industry',Industry);
-        formData.append('Sector',Sector)
-        formData.append('NumOfSymbols',NumOfSymbols)
+        if(Industry)
+            formData.append('Industry',Industry);
+        if(Sector)
+            formData.append('Sector',Sector);
+        if(MarketCap)
+            formData.append('MarketCap',MarketCap);
+        formData.append('NumOfSymbols',NumOfSymbols);
         try{
             let response = await fetch('http://localhost:8080/get-symbols', {
                 method: 'POST',
                 mode: 'cors',
                 body: formData
             })
-            let symbolJson = await response.json()
+            let symbolJson = await response.json();
             if (symbolJson.hasOwnProperty("Error")){
                 console.log("No Symbols for your query")
-                return symbols
+                return symbols;
             }
-            symbols = symbolJson['symbols']
+            symbols = symbolJson['symbols'];
         }
         catch(error){
-            console.log("Error with Query: " + error)
+            console.log("Error with Query: " + error);
         }
-
     }
+    // All of the rest of the values use a search by Xpos to make the query as small as possible(O(numOfSymbols))
     else if(Industry !== null){
-
         let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
         let numOfIndustries= IndustryInfo.data().Industry[Industry];
         let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
         let Industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
             .where("Industry","==",Industry)
             .where("IndustryPos","<=", cutoff)
-            .orderBy("IndustryPos").limit(NumOfSymbols).get()
+            .orderBy("IndustryPos").limit(NumOfSymbols).get();
         Industries.forEach(function(doc){
-            symbols.push(doc.data().Symbol)
+            symbols.push(doc.data().Symbol);
         })
-
+    }
+    else if(MarketCap !== null){
+        let MarketCapInfo = await db.collection("Ticker-Info").doc("Market-Cap").get();
+        let numStocks= MarketCapInfo.data().MarketCap[MarketCap];
+        let cutoff = Math.floor((Math.random()  * (numStocks - NumOfSymbols))+NumOfSymbols);
+        let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+            .where("MarketCapSize","==",MarketCap)
+            .where("MarketCapPos","<=", cutoff)
+            .orderBy("MarketCapPos").limit(NumOfSymbols).get();
+        Stocks.forEach(function(doc){
+            symbols.push(doc.data().Symbol);
+        })
     }
     else if(Sector !== null){
 
@@ -176,35 +193,32 @@ export const initSymbols = async(Industry,Sector,NumOfSymbols) =>{
         let Sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
             .where("Sector","==",Sector)
             .where("SectorPos","<=", cutoff)
-            .orderBy("SectorPos").limit(NumOfSymbols).get()
+            .orderBy("SectorPos").limit(NumOfSymbols).get();
         Sectors.forEach(function(doc){
-            symbols.push(doc.data().Symbol)
-        })
-
+            symbols.push(doc.data().Symbol);
+        });
     }
     else{
-
         let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
         let numOfStocks = StockInfo.data().NumOfStocks - 1;
         let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
         let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
             .where("RandomPos",">=", cutoff)
-            .orderBy("RandomPos").limit(NumOfSymbols).get()
+            .orderBy("RandomPos").limit(NumOfSymbols).get();
         Stocks.forEach(function(Stock){
-            symbols.push(Stock.data().Symbol)
-        })
-
+            symbols.push(Stock.data().Symbol);
+        });
     }
-    return symbols
+    return symbols;
 }
 
 export const makeInvestment = async (roomID, userID, dayIndex, changeArray) => {
     const prices = await getPrices(roomID, dayIndex);
 
-    if (!(await verifyOk(roomID,userID,dayIndex,changeArray,prices))) return false;
+    if (!(await verifyOk(roomID, userID, dayIndex, changeArray, prices))) return false;
 
-    changeCash(roomID,userID,dayIndex,changeArray,prices);
-    changeShares(roomID,userID,dayIndex,changeArray);
+    changeCash(roomID, userID, dayIndex, changeArray, prices);
+    changeShares(roomID, userID, dayIndex, changeArray);
 
     return true;
 }
@@ -214,8 +228,7 @@ function randomDate(start, end) {
     return date;
 }
 
-export const setUpRoom = (NumOfSymbols,Rounds,userID,password,startingMoney = 10000) => {
-
+export const setUpRoom = (symbolsL, Rounds, password, startingMoney = 10000) => {
     const roomRef = db.collection('Rooms').doc();
     roomRef.set({
         day_index: 0,
@@ -224,14 +237,12 @@ export const setUpRoom = (NumOfSymbols,Rounds,userID,password,startingMoney = 10
         startingMoney: startingMoney,
     });
     const roomID = roomRef.id;
-    initSymbols(null,null,NumOfSymbols).then((symbolsL) => {
-        initDates(symbolsL,Rounds).then((datesD)=> {
-            roomRef.update({
-                symbols: symbolsL,
-                dates: datesD["dates"],
-            });
-            initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
+    initDates(db,symbolsL,Rounds).then((datesD)=> {
+        roomRef.update({
+            symbols: symbolsL,
+            dates: datesD["dates"],
         });
+        initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
     });
     return roomID;
 }
@@ -242,6 +253,7 @@ export const updateNetWorth = async (roomID, userID) => {
     const prices = await getPrices(roomID, dayIndex);
     const userData = await getUserData(roomID, userID);
     const userRef = getUserRef(roomID, userID);
+
     const curShares = userData.curShares;
     var netWorth = userData.money_left;
     curShares.map((numShares,idx) => {netWorth += numShares * prices[idx];});
@@ -250,16 +262,15 @@ export const updateNetWorth = async (roomID, userID) => {
 }
 
 export const verifyOk = async (roomID, userID, dayIndex, changeArray, prices) => {
-
     var consistentInvestment = true;
     const userRef = getUserRef(roomID, userID);
     const userData = await getUserData(roomID, userID);
 
     var curArray = userData.curShares;
     var sum = curArray.map(function(num,idx) {return num + changeArray[idx];});
-    consistentInvestment = consistentInvestment && sum.every((e) => e>=0);
+    consistentInvestment = consistentInvestment && sum.every((e) => e >= 0);
 
-    //check cash ok
+    // Check cash ok
     var totalMoney = userData.money_left;
     var moneySpentArr = prices.map(function(price,idx) {totalMoney -= price * changeArray[idx];});
     consistentInvestment = consistentInvestment && totalMoney >= 0;
@@ -276,7 +287,7 @@ export const getCharts = async (roomID, dayIndex) => {
     const numSymbols = await getNumSymbols(roomID);
     var charts = {};
     for(var i = 0; i < numSymbols; i++) {
-        charts[i] = await getChartUrls(roomID,await getSymbolNameFromIndex(roomID,i),dayIndex);
+        charts[i] = await getChartUrls(roomID, await getSymbolNameFromIndex(roomID, i), dayIndex);
     }
     return charts;
 }
@@ -342,8 +353,7 @@ export const getPrices = async (roomID, dayIndex) => {
 export const getRoomData = async (roomID) => {
     const roomRef = getRoomRef(roomID);
     const roomDoc = await roomRef.get();
-    const roomData = await roomDoc.data();
-    return roomData;
+    return roomDoc.data();
 }
 
 export const getRoomRef = (roomID) => {
@@ -367,18 +377,15 @@ export const getSymbolNameFromIndex = async (roomID, symbolIndex) => {
     return symbols[symbolIndex];
 }
 
-export const getSymbols = async (roomID) =>{
+export const getSymbols = async (roomID) => {
     const roomData = await getRoomData(roomID);
     return roomData.symbols;
 }
 
 export const getUserData = async (roomID, userID) => {
-    var userData;
-    const userRef = getUserRef(roomID,userID);
-    await userRef.get().then((doc) => {
-        userData = doc.data();
-    });
-    return userData;
+    const userRef = getUserRef(roomID, userID);
+    const userDoc = await userRef.get();
+    return userDoc.data();
 }
 
 export const getUserRef = (roomID, userID) => {

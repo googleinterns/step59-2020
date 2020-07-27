@@ -24,29 +24,25 @@ class Play extends Component {
     constructor (props) {
         super(props);
         this.state = {
-            //static properties
+            // static properties
             roomId: null,
             password: '',
             userId: '',
             nickname: '',
             numSymbols: 0,
 
-            //frequently updated properties
+            // frequently updated properties
             phase: 'not-joined',
             questionNum: 0,
             chartURLs: null,
             net_worth: 0,
-            money_left: [],
+            money_left: 0,
             curShares: [],
             prices: [],
         };
         this.updatePortfolio = this.updatePortfolio.bind(this);
         this.joinGame = this.joinGame.bind(this);
         this.initGameListener = this.initGameListener.bind(this);
-        this.debug = this.debug.bind(this);
-    }
-
-    componentDidMount() {
     }
 
     handleChangeSelect = (event) => {
