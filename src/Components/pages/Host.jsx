@@ -4,7 +4,7 @@ import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import {Quiz} from '../quiz/host/Quiz.js';
 import {db,fire,fval} from '../../firebase.js';
-import {addUser,getUserData,getUserRef,getRoomData,getRoomRef,getNumDays} from '../firebase-access.jsx';
+import {addUser,advanceDay,getUserData,getUserRef,getRoomData,getRoomRef,getNumDays} from '../firebase-access.jsx';
 
 /*
 Possible phases:
@@ -48,6 +48,7 @@ class Host extends Component {
         this.restartGame = this.restartGame.bind(this);
         this.quitGame = this.quitGame.bind(this);
         this.endGame = this.endGame.bind(this);
+        this.advanceQuestionLocalAndServer = this.advanceQuestionLocalAndServer.bind(this);
     }
 
     componentDidMount() {
@@ -162,16 +163,13 @@ class Host extends Component {
         that.updatePhase('question');
     }
 
-    advanceQuestion() {
+    advanceQuestionLocalAndServer() {
         const {roomId} = this.state;
         const that = this;
         this.setState({
             questionNum: that.state.questionNum + 1,
         });
-        db.collection('Rooms').doc(roomId).update({
-            day_index: fval.increment(1),
-        });
-
+        advanceDay(roomId);
     }
 
     render() {
@@ -224,7 +222,7 @@ class Host extends Component {
                             ))
                             }
                         </ul>
-                        <button onClick={() => this.advanceQuestion()}>next question</button>
+                        <button onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
                     </div>
                 )
             }

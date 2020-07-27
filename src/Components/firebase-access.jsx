@@ -1,7 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
-import {db} from "../firebase";
+import {db, fval} from "../firebase";
 
 export const addUser = async (roomID, nickname) => {
 
@@ -31,6 +31,12 @@ export const addUser = async (roomID, nickname) => {
     }
 
     return userID;
+}
+
+export const advanceDay = (roomID) => {
+    db.collection('Rooms').doc(roomID).update({
+        day_index: fval.increment(1),
+    });
 }
 
 function atLeastTwo(a,b,c) {
@@ -316,7 +322,6 @@ export const getDayIndex = async (roomID) => {
 }
 
 export const getNetWorth = async (roomID, userID) => {
-    await updateNetWorth(roomID, userID);
     const userData = await getUserData(roomID, userID);
     return userData.net_worth;
 }
