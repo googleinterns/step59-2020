@@ -19,7 +19,7 @@ Possible phases:
 /*
 Game structure:
 - phase: (see above)
-- starting_money: contains starting value for users
+- startingMoney: contains starting value for users
 - day_index: which date is used
 - password: password
 - symbols: array of symbols
@@ -49,10 +49,6 @@ class Host extends Component {
         this.quitGame = this.quitGame.bind(this);
         this.endGame = this.endGame.bind(this);
         this.debug = this.debug.bind(this);
-    }
-
-    debug(str) {
-        console.log(str);
     }
 
     componentDidMount() {

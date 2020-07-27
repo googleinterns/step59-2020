@@ -3,29 +3,29 @@ import "firebase/auth";
 import "firebase/firestore";
 import {db} from "../firebase";
 
-const debug = (str) => {
-}
-
 export const addUser = async (roomID,nickname) => {
+
+    //TODO add user authentication
+
     const numDays = (await getDates(roomID)).length;
     const numSymbols = (await getSymbols(roomID)).length;
     const roomRef = await getRoomRef(roomID);
     const userRef = await roomRef.collection('users').doc();
     const userID = userRef.id;
-    const empArray = Array.from(Array(numSymbols),()=>0);
-    const starting_money = await getStartingMoney(roomID);
+    const empArray = Array.from(Array(numSymbols), () => 0);
+    const startingMoney = await getStartingMoney(roomID);
 
     const gameInfo = {
         userId: userID,
         nickname: nickname,
-        net_worth: starting_money,
-        money_left: starting_money,
+        net_worth: startingMoney,
+        money_left: startingMoney,
         curShares: empArray,
     }
 
     userRef.set(gameInfo);
     for(var i_day = 0; i_day < numDays; i_day++) {
-        await userRef.collection('investments').doc(i_day.toString()).set({
+        userRef.collection('investments').doc(i_day.toString()).set({
             change: empArray,
         });
     }
@@ -221,7 +221,7 @@ export const setUpRoom = (NumOfSymbols,Rounds,userID,password,startingMoney = 10
         day_index: 0,
         phase: 'no-host',
         password: password,
-        starting_money: startingMoney,
+        startingMoney: startingMoney,
     });
     const roomID = roomRef.id;
     initSymbols(null,null,NumOfSymbols).then((symbolsL) => {
@@ -357,7 +357,7 @@ export const getShares = async (roomID, userID) => {
 
 export const getStartingMoney = async (roomID) => {
     const roomData = await getRoomData(roomID);
-    return roomData.starting_money;
+    return roomData.startingMoney;
 }
 
 // retrieves symbol name given the symbol's index

@@ -46,10 +46,6 @@ class Play extends Component {
         this.debug = this.debug.bind(this);
     }
 
-    debug(str) {
-        console.log(str);
-    }
-
     componentDidMount() {
     }
 
@@ -80,20 +76,12 @@ class Play extends Component {
         });
     }
 
-    async makeInvestmentWrapper(changeArray) {
-        const that = this;
-        await that.updatePortfolio();
-        const {roomId,userId,questionNum} = this.state;
-        var successful = await makeInvestment(roomId,userId,questionNum,changeArray);
-        return successful;
-    }
-
     async initGameListener() {
         const that = this;
         const {questionNum,roomId,phase,nickname,userId} = this.state;
         const roomRef = db.collection('Rooms').doc(roomId);
         const userRef = roomRef.collection('users').doc(userId);
-        roomRef.onSnapshot(await async function(roomDoc) {
+        roomRef.onSnapshot(async function(roomDoc) {
             const roomData = roomDoc.data();
             if (questionNum != roomData.day_index || phase != roomData.phase) {
                 await that.updatePortfolio();
@@ -102,7 +90,7 @@ class Play extends Component {
                 })
             }
         });
-        userRef.onSnapshot(await async function(userDoc) {
+        userRef.onSnapshot(async function(userDoc) {
             await that.updatePortfolio();
         });
     }
@@ -111,30 +99,29 @@ class Play extends Component {
         const {roomId,password,nickname} = this.state;
         const that = this;
         const roomRef = db.collection('Rooms').doc(roomId);
-        await roomRef.get().then(await async function(roomData) {
+        roomRef.get().then(async function(roomData) {
             if (roomData.exists) {
                 var roomInfo = roomData.data();
                 if (roomInfo.password === password && roomInfo.phase === 'connection') {
-                    console.log("room entered");
                     var uniqueUserId = await addUser(roomId,nickname);
                     that.setState({
                         phase: 'connection',
                         userId: uniqueUserId,
                         numSymbols: roomInfo.symbols.length,
-                        net_worth: roomInfo.starting_money,
-                        money_left: roomInfo.starting_money,
+                        net_worth: roomInfo.startingMoney,
+                        money_left: roomInfo.startingMoney,
                     });
                     await that.initGameListener();
                     await that.updatePortfolio();
                 } else if (roomInfo.password === password) {
-                    console.log("room not being hosted yet");
+                    alert("room not being hosted yet");
                 } else if (roomInfo.phase === 'connection') {
-                    console.log("incorrect password");
+                    alert("incorrect password");
                 } else {
-                    console.log("room does not exist");
+                    alert("room does not exist");
                 }
             } else {
-                console.log("room " + roomId + " does not exist");
+                alert("room " + roomId + " does not exist");
             }
         });
     }
