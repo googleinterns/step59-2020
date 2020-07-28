@@ -13,6 +13,7 @@ const ROUNDS = [
     { value: 6, label: '6 Rounds' },
     { value: 7, label: '7 Rounds' },
   ]
+
 class Config extends React.Component {
 
     constructor(props) {
