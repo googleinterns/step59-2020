@@ -42,4 +42,4 @@ export const getUserID = () =>{
   }
 };
 
-export {db, fire, auth, firestore,signOut, signInWithGoogle};
+export {db, fire, auth, firestore,signOut, signInWithGoogle, fval};
