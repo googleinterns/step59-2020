@@ -25,12 +25,12 @@ class Create extends Component {
         if( localStorage.getItem('User'))
             userAuth = localStorage.getItem('User');
         else
-            userAuth = 'N/A'
+            userAuth = 'N/A';
 
-        this.setState({authenticated : userAuth})
+        this.setState({authenticated : userAuth});
 
-        window.addEventListener("storage", e =>{
-            let change = localStorage.getItem('User')
+        window.addEventListener("storage", e => {
+            let change = localStorage.getItem('User');
             this.setState({ authenticated: change});
         });
         const {gameId} = this.state;
