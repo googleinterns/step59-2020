@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@reach/router";
 import { signInWithGoogle } from "../../firebase";
-import { auth } from "../../firebase";
 
 const SignUp = () => {
   const [displayName, setDisplayName] = useState("");
@@ -11,7 +10,7 @@ const SignUp = () => {
     const { name, value } = event.currentTarget;
     setDisplayName(value);
   };
-
+// TODO: Make a version of this setup with email and password
   return (
     <div>
       <h1>Sign Up</h1>

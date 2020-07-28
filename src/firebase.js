@@ -25,7 +25,13 @@ const signInWithGoogle = () => {
   auth.signInWithPopup(provider);
 };
 
-export {db, fire, auth, firestore,fval, signInWithGoogle};
+const signOut = () =>{
+  auth.signOut().then(function() {
+      console.log("Signed out")
+  }).catch(function(error) {
+      throw ("Error is" + error)
+  });
+}
 
 export const getUserID = () =>{
   var user = firebase.auth().currentUser;
@@ -35,3 +41,5 @@ export const getUserID = () =>{
     throw "Null User"
   }
 };
+
+export {db, fire, auth, firestore,signOut, signInWithGoogle};
