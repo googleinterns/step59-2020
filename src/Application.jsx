@@ -9,6 +9,7 @@ import Home from './Components/pages/Home'
 import UserContext from "./Components/authenticate/providers/UserProvider";
 import SignIn from "./Components/authenticate/SignIn";
 import SignUp from "./Components/authenticate/SignUp";
+import SignOut from "./Components/authenticate/SignOut";
 
 function Application() {
     return (
@@ -19,6 +20,7 @@ function Application() {
             <Route exact path="/host" render={() => <Host />} />
             <Route path = "/auth/signIn" exact component={SignIn}/>
             <Route path = "/auth/signUp" exact component={SignUp}/>
+            <Route path = "/auth/signOut" exact component ={SignOut}/>
             <Route exact path="/create" render={() => <Create />} />
             <Route exact path="/" render={() => <Home />} />
           </div>

@@ -24,7 +24,6 @@ app = Flask(__name__)
 app.secret_key = ""
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
-CORS(app)
 db = firestore.client()
 bucket = storage.bucket()
 
@@ -87,7 +86,13 @@ def get_stock_image():
                     'Stockpublic_image_url':StockDict,
             }
             db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response 
 
 @app.route('/get-symbols',methods=['POST'])
 def get_symbols():
@@ -121,12 +126,12 @@ def get_symbols():
         responseD = {
             "symbols": random.choices(symbols,k=Num_of_Symbols)
         }
-
     response = app.response_class(
         response=json.dumps(responseD),
         status=200,
         mimetype='application/json'
     )
+    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
     
 
@@ -149,7 +154,13 @@ def tech_indic():
     TechI = IntrinsicValue.getAllTechnicalIndicators(symbol,end_date,period)
     TechDict = TechI.to_dict(orient='index')
     db.collection('Rooms').document(roomID).collection(symbol).document('technical-indicators').set(TechDict)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 '''
 Params:
@@ -177,7 +188,13 @@ def time_series():
             'prices': prices
         }
         db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
      
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

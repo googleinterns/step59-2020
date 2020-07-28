@@ -24,7 +24,13 @@ const provider = new firebase.auth.GoogleAuthProvider();
 const signInWithGoogle = () => {
   auth.signInWithPopup(provider);
 };
-
+const signOut = () =>{
+  auth.signOut().then(function() {
+      console.log("Signed out")
+  }).catch(function(error) {
+      throw ("Error is" + error)
+  });
+}
 export const getUserID = () =>{
   var user = firebase.auth().currentUser;
   if (user != null) 
@@ -36,4 +42,4 @@ export const getUserID = () =>{
     throw "Null User"
   }
 };
-export {db, fire, auth, firestore, signInWithGoogle};
+export {db, fire, auth, firestore,signOut, signInWithGoogle};
