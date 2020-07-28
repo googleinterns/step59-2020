@@ -33,7 +33,6 @@ class Home extends Component {
                         </div>
                         <div className="auth-container">
                             <Link to="/auth/signIn">Login</Link>
-                            <Link to="/auth/signUp">Signup</Link>
                         </div>
                     </section>
                 </div>
