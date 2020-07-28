@@ -204,8 +204,7 @@ class Host extends Component {
                             {users.map(user => (
                                 <li >{user.nickname}</li>
                             ))
-                            }
-                        </ul>
+                            }                        </ul>
                         <button onClick={() => this.startGame()}>start stonks game</button>
                     </div>
                 )

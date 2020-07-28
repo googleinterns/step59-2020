@@ -18,12 +18,13 @@ const fire = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const firestore = firebase.firestore();
 const db = firebase.firestore();
-
+const fval = firebase.firestore.FieldValue;
 
 const provider = new firebase.auth.GoogleAuthProvider();
 const signInWithGoogle = () => {
   auth.signInWithPopup(provider);
 };
+
 const signOut = () =>{
   auth.signOut().then(function() {
       console.log("Signed out")
@@ -31,15 +32,14 @@ const signOut = () =>{
       throw ("Error is" + error)
   });
 }
+
 export const getUserID = () =>{
   var user = firebase.auth().currentUser;
-  if (user != null) 
-  {
+  if (user != null) {
     return user.uid;
-  }
-  else
-  {
+  } else {
     throw "Null User"
   }
 };
+
 export {db, fire, auth, firestore,signOut, signInWithGoogle};

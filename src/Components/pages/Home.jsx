@@ -64,6 +64,7 @@ class Home extends Component {
                         </div>
                         }
                         <div className="auth-container">
+                            <Link to="/auth/signIn">Login</Link>
                             {this.getAuth()}
                         </div>
                     </section>
