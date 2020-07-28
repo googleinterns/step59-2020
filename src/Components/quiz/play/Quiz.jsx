@@ -177,13 +177,13 @@ class Quiz extends Component {
                 break;
             }
         }
-        s
+
         this.validate(changeArray);
         makeInvestment(ROOMID, this.state.userID, DAY_INDEX, changeArray);
         alert('investment recorded');
     }
 
-    //TODO make this implement buyArray instead of just buying one share of the first symbol
+    // TODO make this implement buyArray instead of just buying one share of the first symbol
     buy() {
         const {roomId, userId, questionNum} = this.state;
         var arr = new Array(this.props.numSymbols).fill(0);
