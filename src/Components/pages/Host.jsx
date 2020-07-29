@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
-import {Quiz} from '../quiz/host/Quiz.js';
 import {db,fire,fval} from '../../firebase.js';
 import {addUser,advanceDay,getUserData,getUserRef,getRoomData,getRoomRef,getNumDays} from '../firebase-access.jsx';
 

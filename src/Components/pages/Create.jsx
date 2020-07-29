@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { Link,Redirect } from 'react-router-dom';
-import {db, fire, auth, firestore} from '../../firebase.js';
-import Config from '../pages/Config.jsx';
+import React, {Component} from 'react';
+import {Link,Redirect} from 'react-router-dom';
+import {db,fire,auth,firestore} from '../../firebase.js';
+// import Config from '../pages/Config.jsx';
 
 class Create extends Component {
 
@@ -49,9 +49,9 @@ class Create extends Component {
             return <Redirect to="/" />   
         return (
             <div className="app-page create-page">
-                {pagetype === 'not-created' &&
-                   <Config updatePageType ={this.updatePageType.bind(this)}/>
-                }
+                {/*{pagetype === 'not-created' &&*/}
+                {/*   <Config updatePageType ={this.updatePageType.bind(this)}/>*/}
+                {/*}*/}
 
                 {pagetype === 'created' && (
                     <div>

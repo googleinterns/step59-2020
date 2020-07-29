@@ -1,6 +1,7 @@
 import React from 'react';
 import { firestore} from '../../firebase.js';
-import {setUpRoom,getIndustries,getSectors,getMarketCaps,initSymbols} from '../firebase-access.jsx'
+// import {setUpRoom,getIndustries,getSectors,getMarketCaps,initSymbols} from '../firebase-access.jsx'
+import {setUpRoom,initSymbols} from '../firebase-access.jsx'
 import AsyncSelect from 'react-select/async';
 import Select from 'react-select'
 
