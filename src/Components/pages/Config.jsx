@@ -1,7 +1,6 @@
 import React from 'react';
 import { firestore} from '../../firebase.js';
-import {setUpRoom,getIndustries,getSectors,getMarketCaps,initSymbols} from '../firebase-access.jsx'
-import {setUpRoom,initSymbols} from '../firebase-access.jsx'
+import {setUpRoom,getIndustries,getSectors,getMarketCaps,initSymbols} from '../firebase-access.jsx';
 import AsyncSelect from 'react-select/async';
 import Select from 'react-select'
 
@@ -32,15 +31,15 @@ class Config extends React.Component {
       }
   
       getIndustryList = async () => {
-          let IndList =await getIndustries(firestore);
+          let IndList = await getIndustries(firestore);
           return IndList;
       }
       getSectorList = async () => {
-          let SectorList =await getSectors(firestore);
+          let SectorList = await getSectors(firestore);
           return SectorList;
       }
       getMarketCapList = async () => {
-          let CapList =await getMarketCaps(firestore);
+          let CapList = await getMarketCaps(firestore);
           return CapList;
       }
       handleIndustryChange = selectedOption => {
