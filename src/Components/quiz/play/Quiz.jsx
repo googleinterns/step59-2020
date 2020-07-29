@@ -28,7 +28,6 @@ class Quiz extends Component {
 
             // frequently updated properties
             questionNum: 0,
-            curChartURL: null,
             net_worth: 0,
             money_left: 0,
             curShares: [],
