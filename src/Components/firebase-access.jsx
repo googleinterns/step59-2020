@@ -160,7 +160,7 @@ export const initSymbols = async(db,Industry,Sector,MarketCap,NumOfSymbols) =>{
       formData.append('NumOfSymbols',NumOfSymbols);
       var token =  localStorage.getItem('Token');
       try{
-          let response = await fetch('https://us-central1-integrity-step-capstone.cloudfunctions.net/get_symbols ', {
+          let response = await fetch('/get_symbols ', {
               method: 'POST',
               body: formData,
               headers: {
