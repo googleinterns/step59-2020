@@ -5,10 +5,12 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import {addUser,getCharts,getSymbols,getDayIndex,getPrices,getUserData,getUserRef,makeInvestment,
-    getCash,getShares,getRoomData,getRoomRef,getNetWorth,updateNetWorth} from '../firebase-access.jsx';
+    getCash,getShares,getRoomData,getRoomRef,getNetWorth,updateNetWorth,getLeaders} from '../firebase-access.jsx';
 import {Helmet} from 'react-helmet';
 import {isRedirect} from "@reach/router";
 
+
+//TODO @Jack Fix NAN issue for leaderboard
 class Play extends Component {
 
     /*
@@ -85,6 +87,10 @@ class Play extends Component {
                 that.setState({
                     phase: roomData.phase,
                 });
+                var leaders = await getLeaders(roomId);
+                that.setState({
+                    leaders: leaders,
+                })
             }
         });
         userRef.onSnapshot(async function(userDoc) {
@@ -124,7 +130,7 @@ class Play extends Component {
     }
 
     render () {
-        const {phase,password,nickname,playerKey,questionNum,roomId,isRedirected} = this.state;
+        const {phase,password,nickname,playerKey,questionNum,roomId,isRedirected,leaders} = this.state;
         if (phase === 'not-joined') {
             return (
                 <div className="page-container play-page">
@@ -157,9 +163,17 @@ class Play extends Component {
                 </div>
             )
         } else if (phase === 'ended') {
+            console.log(leaders);
             return (
                 <div>
-                    <p> Game has ended </p>
+                    <h1> Game has ended </h1>
+                    <h2> Here were the winners: </h2>
+                    <ul id="user-list">
+                        {leaders.map(user => (
+                            <li key={user.id}>{user.nickname} - Net worth: {user.net_worth}</li>
+                        ))
+                        }
+                    </ul>
                 </div>
             )
         }

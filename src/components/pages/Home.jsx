@@ -6,7 +6,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import {Helmet} from 'react-helmet';
 import {Link} from 'react-router-dom';
-import * as styles from '../styles/Home.jsx';
+import * as styles from '../styles/HomeStyle.jsx';
 import Instructions from '../quiz/Instructions.jsx'
 
 class Home extends Component {

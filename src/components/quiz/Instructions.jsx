@@ -2,7 +2,7 @@ import React, {Component,Fragment} from 'react';
 import {Helmet} from 'react-helmet';
 import {Link, withRouter} from 'react-router-dom';
 import Button from '@material-ui/core/Button';
-import * as styles from '../styles/Instructions.jsx';
+import * as styles from '../styles/InstructionsStyle.jsx';
 
 class Instructions extends Component {
     /*

@@ -26,6 +26,7 @@ Game structure:
 
  */
 
+// TODO @Jack make sure end game occurs on the right question index
 class Host extends Component {
 
     constructor(props) {
@@ -38,6 +39,7 @@ class Host extends Component {
             authenticated: 'no',
             listening: 'no',
             users: [],
+            leaders: null,
         }
         this.userExists = this.userExists.bind(this);
         this.updateUsers = this.updateUsers.bind(this);
@@ -153,7 +155,6 @@ class Host extends Component {
         const {roomId} = this.state;
         var roomRef = db.collection('Rooms').doc(roomId);
         const that = this;
-
         roomRef.collection('users').onSnapshot(function(roomData) {
             that.updateUsers();
         });
@@ -164,13 +165,17 @@ class Host extends Component {
         that.updatePhase('question');
     }
 
-    advanceQuestionLocalAndServer() {
-        const {roomId} = this.state;
+    async advanceQuestionLocalAndServer() {
+        const {roomId,questionNum} = this.state;
         const that = this;
         this.setState({
             questionNum: that.state.questionNum + 1,
         });
-        advanceDay(roomId);
+        if (questionNum >= (await getNumDays(roomId)))
+            this.setState({
+                phase: "ended",
+            })
+        await advanceDay(roomId);
     }
 
     render() {
@@ -202,7 +207,7 @@ class Host extends Component {
                         <p> Users List </p>
                         <ul id="user-list">
                             {users.map(user => (
-                                <li >{user.nickname}</li>
+                                <li>{user.nickname}</li>
                             ))
                             }
                         </ul>
@@ -226,7 +231,11 @@ class Host extends Component {
                     </div>
                 )
             } else if (phase === 'ended') {
-
+                return (
+                    <div>
+                        <h1> Game has ended </h1>
+                    </div>
+                )
             }
         }
     }

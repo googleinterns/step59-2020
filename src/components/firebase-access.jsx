@@ -32,14 +32,26 @@ export const addUser = async (roomID, nickname) => {
             change: empArray,
         });
     }
-
     return userID;
 }
 
-export const advanceDay = (roomID) => {
-    db.collection('Rooms').doc(roomID).update({
+export const advanceDay = async (roomID) => {
+    var roomRef = getRoomRef(roomID);
+    await roomRef.update({
         day_index: fval.increment(1),
     });
+    await roomRef.collection('users').get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(user) {
+            updateNetWorth(roomID,user.data().userId);
+        });
+    });
+
+    var roomData = await getRoomData(roomID);
+    if (roomData.dates.length == roomData.day_index) {
+        roomRef.update({
+            phase: 'ended',
+        })
+    }
 }
 
 function atLeastTwo(a,b,c) {
@@ -104,11 +116,11 @@ export const initDates = async (symbols, Rounds) => {
         dates.push(curr_date.toISOString().substring(0, 10));
         curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
     }
-    const datesD ={
+    const datesD = {
         "dates" : dates,
         "period": random_period
     }
-    return datesD
+    return datesD;
 }
 
 export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
@@ -139,10 +151,9 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
     }
 }
 
-export const initSymbols = async(Industry,Sector,NumOfSymbols) =>{
+export const initSymbols = async (Industry,Sector,NumOfSymbols) =>{
     let symbols = []
-    if (Sector !== null && Industry !== null){
-
+    if (Sector !== null && Industry !== null) {
         let formData = new FormData();
         formData.append('Industry',Industry);
         formData.append('Sector',Sector);
@@ -163,47 +174,41 @@ export const initSymbols = async(Industry,Sector,NumOfSymbols) =>{
         catch(error){
             console.log("Error with Query: " + error)
         }
-
     }
     else if(Industry !== null){
-
         let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
         let numOfIndustries= IndustryInfo.data().Industry[Industry];
         let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
         let Industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
             .where("Industry","==",Industry)
             .where("IndustryPos","<=", cutoff)
-            .orderBy("IndustryPos").limit(NumOfSymbols).get()
+            .orderBy("IndustryPos").limit(NumOfSymbols).get();
         Industries.forEach(function(doc){
             symbols.push(doc.data().Symbol)
         })
-
     }
     else if(Sector !== null){
-
         let SectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
         let numOfSectors= SectorInfo.data().Sector[Sector];
         let cutoff = Math.floor((Math.random()  * (numOfSectors - NumOfSymbols))+NumOfSymbols);
         let Sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
             .where("Sector","==",Sector)
             .where("SectorPos","<=", cutoff)
-            .orderBy("SectorPos").limit(NumOfSymbols).get()
+            .orderBy("SectorPos").limit(NumOfSymbols).get();
         Sectors.forEach(function(doc){
             symbols.push(doc.data().Symbol)
         })
-
     }
     else{
         let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
         let numOfStocks = StockInfo.data().NumOfStocks - 1;
-        let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
+        let cutoff = Math.floor((Math.random() * (numOfStocks - NumOfSymbols))+NumOfSymbols);
         let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
             .where("RandomPos",">=", cutoff)
-            .orderBy("RandomPos").limit(NumOfSymbols).get()
+            .orderBy("RandomPos").limit(NumOfSymbols).get();
         Stocks.forEach(function(Stock){
             symbols.push(Stock.data().Symbol)
         })
-
     }
     return symbols
 }
@@ -307,6 +312,16 @@ export const getDateFromIndex = async (roomID, dayIndex) => {
 export const getDates = async (roomID) => {
     const roomData = await getRoomData(roomID);
     return roomData.dates;
+}
+
+export const getLeaders = async (roomID) => {
+    var roomRef = getRoomRef(roomID);
+    var leaders = await roomRef.collection('users').orderBy('net_worth','desc').limit(3).get();
+    var leadersArray = []
+    leaders.forEach((doc) => {
+        leadersArray = leadersArray.concat(doc.data());
+    })
+    return leadersArray;
 }
 
 export const getDayIndex = async (roomID) => {

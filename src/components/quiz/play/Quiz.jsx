@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Select from 'react-select';
 import NumericInput from 'react-numeric-input';
-import * as styles from '../../styles/Quiz.jsx';
+import * as styles from '../../styles/QuizStyle.jsx';
 import {makeInvestment} from '../../firebase-access';
 import Instructions from "../Instructions";
 import Button from "@material-ui/core/Button";
