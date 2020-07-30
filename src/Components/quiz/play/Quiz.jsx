@@ -105,8 +105,7 @@ class Quiz extends Component {
     sell = (event) => {
         const {roomId, userId, questionNum} = this.state;
         var changeArray = new Array(this.state.numSymbols).fill(0);
-        changeArray[this.state.curSymbol] = (-1 * event.target.value);
-
+      
         var numShares = null;
 
         !event.target.value ? numShares = 0 : numShares = (-1 * event.target.value);
