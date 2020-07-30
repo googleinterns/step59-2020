@@ -12,7 +12,6 @@ import * as styles from '../styles/Instructions.jsx';
 * of information to display as props.
 */
 
-
 class Instructions extends Component {
     /*
         Prop property will be all given under 'info'
