@@ -1,5 +1,5 @@
 import {db} from "../../src/firebase.js"
-import * as fireaccess from '../../src/Components/firebase-access.jsx';
+import * as fireaccess from '../../src/components/firebase-access.jsx';
 
 import "@babel/polyfill";
 import 'regenerator-runtime/runtime';

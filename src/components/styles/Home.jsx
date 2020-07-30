@@ -19,6 +19,17 @@ export const center = {
     justifyContent:'center',
 }
 
+export const box = {
+    background: 'white',
+    borderRadius: '10px',
+    padding: '10px',
+    width: '60%',
+    fontSize: '30px',
+    opacity: '0.7',
+    margin: 'auto',
+    shadow: '10px 10px 40px 7px rbga(0,0,0,0.5)',
+}
+
 export const displayAlign = {
     position: 'relative',
     display:'flex',

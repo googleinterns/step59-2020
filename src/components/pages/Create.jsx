@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import {Link,Redirect} from 'react-router-dom';
 import {db,fire,auth,firestore} from '../../firebase.js';
-import Config from '../pages/Config.jsx';
+import Config from '../quiz/create/Config.jsx';
 
 class Create extends Component {
 
     constructor(props) {
         super(props);
         let userAuth = null;
-        if( localStorage.getItem('User'))
+        if(localStorage.getItem('User'))
             userAuth = localStorage.getItem('User');
         else
             userAuth = 'N/A'
@@ -22,7 +22,7 @@ class Create extends Component {
     
     componentDidMount() {
         let userAuth = null;
-        if( localStorage.getItem('User'))
+        if(localStorage.getItem('User'))
             userAuth = localStorage.getItem('User');
         else
             userAuth = 'N/A';
@@ -50,7 +50,7 @@ class Create extends Component {
         return (
             <div className="app-page create-page">
                 {pagetype === 'not-created' &&
-                   <Config updatePageType ={this.updatePageType.bind(this)}/>
+                   <Config updatePageType={this.updatePageType.bind(this)}/>
                 }
 
                 {pagetype === 'created' && (

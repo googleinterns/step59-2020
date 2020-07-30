@@ -122,19 +122,21 @@ class Host extends Component {
         const {password,roomId} = this.state;
         const that = this;
         var roomRef = getRoomRef(roomId);
+        console.log(roomRef);
         var roomData = await getRoomData(roomId);
-        if (!roomData) {
-            if (roomData.password === password && roomData.phase === 'no-host') {
+        console.log(roomData);
+        if (roomData) {
+            if (roomData.password === password && (roomData.phase === 'no-host' || roomData.phase === 'question' || roomData.phase === 'connection')) {
                 that.setState({
                     authenticated: 'yes',
-                    phase: 'connection',
+                    phase: (roomData.phase === 'no-host' ? 'connection' : roomData.phase),
                 });
+                roomRef.update({
+                    phase: this.state.phase
+                })
                 await addUser(roomId,"dummy user");
                 await that.updateUsers();
                 await that.initGameListener();
-                roomRef.update({
-                    phase: 'connection',
-                });
                 var numDays = getNumDays(roomId);
                 that.setState({
                     numDays: numDays,
@@ -179,7 +181,6 @@ class Host extends Component {
             end: this.endGame,
             quit: this.quitGame,
         }
-
         if (authenticated === 'no') {
             return (
                 <div className="page-container host-page">
@@ -203,7 +204,8 @@ class Host extends Component {
                             {users.map(user => (
                                 <li >{user.nickname}</li>
                             ))
-                            }                        </ul>
+                            }
+                        </ul>
                         <button onClick={() => this.startGame()}>start stonks game</button>
                     </div>
                 )
@@ -223,6 +225,8 @@ class Host extends Component {
                         <button onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
                     </div>
                 )
+            } else if (phase === 'ended') {
+
             }
         }
     }

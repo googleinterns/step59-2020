@@ -55,13 +55,12 @@ class Home extends Component {
                     />
                     }
 
-                    <div>
+                    <div style={styles.box}>
                         <Text style={styles.h1}> Toohak Stock Game! </Text>
                         <p> Toohak game is a stocks game that let's the user simulate investing in stocks in a quick,
                         game based format. It is essentially Kahoot, but instead of answering questions you are buying
                         stocks! </p>
                     </div>
-
 
                     <div style={styles.displayAlign}>
                         <section>

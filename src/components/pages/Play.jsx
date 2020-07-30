@@ -5,7 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import {addUser,getCharts,getSymbols,getDayIndex,getPrices,getUserData,getUserRef,makeInvestment,
-    getCash,getShares,getRoomData,getRoomRef,getNetWorth} from '../firebase-access.jsx';
+    getCash,getShares,getRoomData,getRoomRef,getNetWorth,updateNetWorth} from '../firebase-access.jsx';
 import {Helmet} from 'react-helmet';
 import {isRedirect} from "@reach/router";
 
@@ -57,6 +57,7 @@ class Play extends Component {
 
     async updatePortfolio() {
         const {roomId,userId} = this.state;
+        await updateNetWorth(roomId,userId);
         var roomData = await getRoomData(roomId);
         var userData = await getUserData(roomId,userId);
         var chartUrls = await getCharts(roomId,roomData.day_index);
@@ -83,7 +84,7 @@ class Play extends Component {
                 await that.updatePortfolio();
                 that.setState({
                     phase: roomData.phase,
-                })
+                });
             }
         });
         userRef.onSnapshot(async function(userDoc) {
@@ -98,7 +99,7 @@ class Play extends Component {
         roomRef.get().then(async function(roomData) {
             if (roomData.exists) {
                 var roomInfo = roomData.data();
-                if (roomInfo.password === password && roomInfo.phase === 'connection') {
+                if (roomInfo.password === password && (roomInfo.phase === 'connection' || roomInfo.phase === 'question')) {
                     var uniqueUserId = await addUser(roomId,nickname);
                     that.setState({
                         phase: 'connection',
