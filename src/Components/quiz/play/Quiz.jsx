@@ -152,7 +152,6 @@ class Quiz extends Component {
                     }
                 </form>
 
-
             </div>
         )
     }
