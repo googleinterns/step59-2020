@@ -12,11 +12,8 @@ class UserProvider extends Component {
     auth.onAuthStateChanged(userAuth => {
       // The event stuff here is only done because when sign in is triggered on the same page
       // it won't cause a rerender.
-      // if the authentication status is changed it won't cause a rerender, only if it's on a different page.
-      // That's why I'm adding the dispatch event to force trigger.
       var event = document.createEvent("Event");
       event.initEvent("storage", true, true);
-
       if(userAuth == null){
         localStorage.setItem('User', 'N/A');
         window.dispatchEvent(event);
@@ -27,7 +24,7 @@ class UserProvider extends Component {
         localStorage.setItem('User',userAuth.displayName);
         window.dispatchEvent(event);
         this.setState({user:userAuth.displayName});
-      } 
+      }
     });
   }
 

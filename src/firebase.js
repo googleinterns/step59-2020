@@ -25,7 +25,7 @@ const createDB = (useLocalhost) => {
     db.settings({
       host: "localhost:8080",
       ssl: false
-    });  
+    });
   }
   return db;
 }
@@ -37,12 +37,20 @@ const db = createDB(USE_LOCALHOST);
 
 const provider = new firebase.auth.GoogleAuthProvider();
 const signInWithGoogle = () => {
-  auth.signInWithPopup(provider);
+  auth.signInWithPopup(provider).then(function(result) {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    var token = result.credential.idToken;
+    console.log('Token is ' + token);
+    localStorage.setItem('Token', token);
+  }).catch(function(error) {
+    console.log(error)
+  });
 };
 
 const signOut = () =>{
   auth.signOut().then(function() {
       console.log("Signed out")
+      localStorage.setItem('Token','N/A');
   }).catch(function(error) {
       throw ("Error is" + error)
   });
