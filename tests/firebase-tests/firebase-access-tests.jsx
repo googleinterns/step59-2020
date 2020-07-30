@@ -3,7 +3,8 @@ import * as fireaccess from '../../src/Components/firebase-access.jsx';
 
 import "@babel/polyfill";
 import 'regenerator-runtime/runtime';
-import { assert } from 'chai'; 
+import { assert } from 'chai';
+import sinon from 'sinon';
 
 const ROOMS = 'Rooms';
 const ROOMID = 'mockroom';
@@ -161,3 +162,50 @@ describe("test advanceDay", () => {
     assert.equal((DAYINDEX+1), dbDayIndex);
   }).timeout(5000);
 });
+
+/* ********* Tests involving HTTP requests ********* */
+
+// stub initialize quiz, populate db with mock data
+// initialize quiz should set the prices and image urls in db
+
+describe("test setUpRoom", () => {
+  let initializeQuizStub;
+
+  beforeEach(() => {
+    initializeQuizStub = sinon.stub(fireaccess, "initializeQuiz");
+  });
+
+  afterEach(() => {
+    initializeQuizStub.restore();
+  });
+
+  it("test initializeQuiz", async () => {
+    
+    // params necessary for initializeQuiz
+    const PERIODLEN = 1;
+    const ENDDATE = "03-01-2015";
+    const PRICES = 'Prices';
+    const IMAGES = 'Images';
+
+    // stubs function
+    initializeQuizStub.callsFake(function() => {
+      
+      // set prices data
+      symbolRef.doc(PRICES).set({
+        prices: SYMBOL_PRICES
+      });
+
+      // set image urls
+      symbolRef.doc(IMAGES).set({
+        RSIPublicImagesUrl: {ENDDATE: 'mock-url'}
+      });
+
+      return Promise.resolve('initializeQuizPromise');
+    });
+
+    // call the function
+    const res = await fireaccess.initializeQuiz(SYMBOLS, ROOMID, PERIODLEN, ENDDATE);
+    assert.equal('initializeQuizPromise', res);
+  }).timeout(5000);
+})
+

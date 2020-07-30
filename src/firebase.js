@@ -17,8 +17,23 @@ const fire = firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const firestore = firebase.firestore();
-const db = firebase.firestore();
 const fval = firebase.firestore.FieldValue;
+
+const createDB = (useLocalhost) => {
+  const db = firebase.firestore();
+  if (useLocalhost) {
+    db.settings({
+      host: "localhost:8080",
+      ssl: false
+    });  
+  }
+  return db;
+}
+
+// change this to false when running in prod
+const USE_LOCALHOST = false;
+
+const db = createDB(USE_LOCALHOST);
 
 const provider = new firebase.auth.GoogleAuthProvider();
 const signInWithGoogle = () => {
