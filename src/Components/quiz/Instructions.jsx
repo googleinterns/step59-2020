@@ -4,6 +4,15 @@ import {Link, withRouter} from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import * as styles from '../styles/Instructions.jsx';
 
+/*
+* Renders instructions as jsx and uses conditional rendering to only render the
+* specified type of instruction.
+*
+* Can easily be rendered in different pages by passing in the type
+* of information to display as props.
+*/
+
+
 class Instructions extends Component {
     /*
         Prop property will be all given under 'info'
@@ -20,7 +29,7 @@ class Instructions extends Component {
         }
     }
 
-    // TODO add more instructions
+    // TODO: (@johnkongtcheu) add technical indicator instructions
     render() {
         const {info} = this.props;
         return (
