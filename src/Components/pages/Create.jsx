@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import { Link,Redirect } from 'react-router-dom';
-import {db, fire, auth, firestore} from '../../firebase.js';
+import React, {Component} from 'react';
+import {Link,Redirect} from 'react-router-dom';
+import {db,fire,auth,firestore} from '../../firebase.js';
 import Config from '../pages/Config.jsx';
 
 class Create extends Component {
