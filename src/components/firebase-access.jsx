@@ -401,3 +401,52 @@ export const getUserData = async (roomID, userID) => {
 export const getUserRef = (roomID, userID) => {
     return db.collection('Rooms').doc(roomID).collection('users').doc(userID);
 }
+
+/* configuration methods */
+/* commenting out for now. TODO @john: add back in once Config works properly. */
+/*
+function compDoc(a, b){
+  if (a.value < b.value) {
+    return -1;
+  }
+  if (a.value > b.value) {
+    return 1;
+  }
+  return 0;
+}
+
+export const getIndustries = async (db) => {
+  let Industries = await db.collection("Ticker-Info").doc("Industry").get();
+  let IndustryData =  Industries.data().Industry;
+  let IndustryList = [];
+  for(const Industry in IndustryData) {
+    IndustryList.push({value: Industry, label: Industry});
+  }
+  IndustryList.push({value: null, label: "None"});
+  IndustryList.sort(compDoc);
+  return IndustryList;
+}
+
+export const getSectors = async (db) => {
+  let Sectors = await db.collection("Ticker-Info").doc("Sector").get();
+  let SectorData =  Sectors.data().Sector;
+  let SectorList = [];
+  for(const Sector in SectorData) {
+    SectorList.push({value: Sector, label: Sector});
+  }
+  SectorList.push({value: null, label:"None"});
+  SectorList.sort(compDoc);
+  return SectorList;
+}
+
+export const getMarketCaps = async (db) => {
+  let MarketCaps = await db.collection("Ticker-Info").doc("Market-Cap").get();
+  let MarketCapData =  MarketCaps.data().MarketCap;
+  let MarketCapList = [];
+  for(const Stock in MarketCapData) {
+    MarketCapList.push({value: Stock, label: Stock});
+  }
+  MarketCapList.push({value: null, label:"None"});
+  MarketCapList.sort(compDoc);
+  return MarketCapList;
+} */
