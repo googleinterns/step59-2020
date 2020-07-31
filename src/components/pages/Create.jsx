@@ -2,6 +2,12 @@ import React, {Component} from 'react';
 import {Link,Redirect} from 'react-router-dom';
 import {db,fire,auth,firestore} from '../../firebase.js';
 import Config from '../quiz/create/Config.jsx';
+import {Helmet} from "react-helmet";
+import {CopyToClipboard} from 'react-copy-to-clipboard';
+
+import {Text} from 'react-native';
+import * as styles from '../styles/CreateStyle.jsx';
+import Button from "@material-ui/core/Button";
 
 class Create extends Component {
 
@@ -43,23 +49,46 @@ class Create extends Component {
         })
     }
 
+    copyToClipboard = (event) => {
+        
+    }
+
     render() {
         const {authenticated,pagetype,gameId} = this.state;
         if (authenticated == 'N/A') 
             return <Redirect to="/" />   
         return (
             <div className="app-page create-page">
+                <Helmet><title>Create Room</title></Helmet>
                 {pagetype === 'not-created' &&
                    <Config updatePageType={this.updatePageType.bind(this)}/>
                 }
 
                 {pagetype === 'created' && (
                     <div>
-                        <span>Created game PIN: </span>
-                        {' '}
-                        <span className="dynamic-text">{gameId}</span>
-                        {' '}
-                        <Link to="/host">Copy this ID and use it host the game</Link>
+                        <body style={styles.body}>
+                            <div style={styles.box}>
+                                <Text style={styles.h1}>Successfully created room!</Text>
+                            </div>
+                            <br/>
+
+                            <label style={styles.gamePIN}>Game PIN: </label>
+                            <span className="dynamic-text">{gameId}</span>
+
+                            <CopyToClipboard text={gameId}
+                                onCopy={() => alert('Copied to clipboard!')}
+                            >
+                                <button style={styles.copyButtonStyle}>Copy</button>
+                            </CopyToClipboard>
+                            <br/>
+
+                            <p>Click the Copy button above to copy the Game PIN to your clipboard.</p>
+                            <p>Then, click the button below to host the game!</p>
+                            <Link to='/host' style={{textDecoration: 'none'}}>
+                                <Button style={styles.buttonStyle} to="/host">Host</Button>
+                            </Link>
+                            
+                        </body>
                     </div>
                 )}
             </div>
