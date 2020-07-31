@@ -163,7 +163,6 @@ class Play extends Component {
                 </div>
             )
         } else if (phase === 'ended') {
-            console.log(leaders);
             return (
                 <div>
                     <h1> Game has ended </h1>
