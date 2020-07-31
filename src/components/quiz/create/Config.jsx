@@ -28,7 +28,7 @@ class Config extends React.Component {
     createRoom = () => {
         console.log("create room called");
         const {numSymbols,numRounds} = this.state;
-        var roomID = setUpRoom(numSymbols,numRounds,'');
+        var roomID = setUpRoom(numSymbols,numRounds+1,'');
         this.props.updatePageType('created',roomID);
         console.log(this.props.roomId);
     }
@@ -41,7 +41,7 @@ class Config extends React.Component {
                 <NumericInput type='number' name="numSymbols" step={1} value={this.state.numSymbols} min={1} max={7}
                        onChange={this.handleChange.bind(this,'numSymbols')}/>
                 <p> Set number of rounds </p>
-                <NumericInput type='number' name="numRounds" step={1} value={this.state.numRounds} min={1} max={7}
+                <NumericInput type='number' name="numRounds" step={1} value={this.state.numRounds} min={2} max={7}
                        onChange={this.handleChange.bind(this,'numRounds')}/>
                 <button onClick={() => this.createRoom()}> Create room </button>
             </div>
