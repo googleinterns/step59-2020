@@ -29,7 +29,7 @@ export const dropdown = {
 }
 
 export const box = {
-    background: 'white',
+    background: 'rgba(255,255,255,95%)',
     fontWeight: 'bold',
     borderRadius: '10px',
     padding: '10px',
