@@ -44,7 +44,7 @@ export const advanceDay = async (roomID) => {
     });
 
     var roomData = await getRoomData(roomID);
-    if (roomData.dates.length - 1<= roomData.day_index) {
+    if (roomData.dates.length - 1 <= roomData.day_index) {
         roomRef.update({
             phase: 'ended',
         })
