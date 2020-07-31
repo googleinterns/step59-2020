@@ -5,10 +5,14 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import {addUser,getCharts,getSymbols,getDayIndex,getPrices,getUserData,getUserRef,makeInvestment,
-    getCash,getShares,getRoomData,getRoomRef,getNetWorth} from '../firebase-access.jsx';
+    getCash,getShares,getRoomData,getRoomRef,getNetWorth,updateNetWorth,getLeaders} from '../firebase-access.jsx';
 import {Helmet} from 'react-helmet';
 import {isRedirect} from "@reach/router";
+import * as styles from "../styles/QuizStyle";
+import {NavLink} from "react-router-dom";
 
+
+//TODO @Jack Fix NAN issue for leaderboard
 class Play extends Component {
 
     /*
@@ -57,6 +61,7 @@ class Play extends Component {
 
     async updatePortfolio() {
         const {roomId,userId} = this.state;
+        await updateNetWorth(roomId,userId);
         var roomData = await getRoomData(roomId);
         var userData = await getUserData(roomId,userId);
         var chartUrls = await getCharts(roomId,roomData.day_index);
@@ -83,6 +88,10 @@ class Play extends Component {
                 await that.updatePortfolio();
                 that.setState({
                     phase: roomData.phase,
+                });
+                var leaders = await getLeaders(roomId);
+                that.setState({
+                    leaders: leaders,
                 })
             }
         });
@@ -98,7 +107,7 @@ class Play extends Component {
         roomRef.get().then(async function(roomData) {
             if (roomData.exists) {
                 var roomInfo = roomData.data();
-                if (roomInfo.password === password && roomInfo.phase === 'connection') {
+                if (roomInfo.password === password && (roomInfo.phase === 'connection' || roomInfo.phase === 'question')) {
                     var uniqueUserId = await addUser(roomId,nickname);
                     that.setState({
                         phase: 'connection',
@@ -123,25 +132,34 @@ class Play extends Component {
     }
 
     render () {
-        const {phase,password,nickname,playerKey,questionNum,roomId,isRedirected} = this.state;
+        const {phase,password,nickname,playerKey,questionNum,roomId,isRedirected,leaders} = this.state;
         if (phase === 'not-joined') {
             return (
-                <div className="page-container play-page">
-                    <div>
-                        <FormControl>
-                            <TextField label="Nickname" name="nickname" value={nickname}
-                                       onChange={this.handleChange('nickname')}/>
-                        </FormControl>
-                        <FormControl>
-                            <TextField label="Game PIN" name="Game ID" value={roomId} onChange={this.handleChange('roomId')}/>
-                        </FormControl>
-                        <FormControl>
-                            <TextField label="Password" type="password" name="password" value={password}
-                                       onChange={this.handleChange('password')}/>
-                        </FormControl>
-                        <Button onClick={() => this.joinGame()} variant="contained">Join</Button>
+                <body style={styles.body} className="page-container host-page">
+                    <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)'}}>
+                        <h1 style={{opacity:'80%'}}> Enter your nickname, room PIN and password (if applicable) to join a game! </h1>
+                        <div style={styles.box}>
+                            <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
+                                <TextField label="Nickname" name="nickname" value={nickname}
+                                           onChange={this.handleChange('roomId')}/>
+                            </FormControl>
+                            <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
+                                <TextField label="Game PIN" name="Game ID" value={roomId}
+                                           onChange={this.handleChange('roomId')}/>
+                            </FormControl>
+                            <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
+                                <TextField label="Password" type="password" name="password" value={password}
+                                           onChange={this.handleChange('password')}/>
+                            </FormControl>
+                            <Button  style={styles.buttonStyle} onClick={() => this.joinGame()} variant="contained">Join game</Button>
+                        </div>
+                        <NavLink to="/" style={{textDecoration: 'none'}}>
+                            <Button style={styles.buttonStyle}>
+                                Home
+                            </Button>
+                        </NavLink>
                     </div>
-                </div>
+                </body>
             )
         } else if (phase === 'connection') {
             return (
@@ -157,9 +175,18 @@ class Play extends Component {
             )
         } else if (phase === 'ended') {
             return (
-                <div>
-                    <p> Game has ended </p>
+                <body style={styles.body}>
+                <div style={styles.box}>
+                    <h1> Game has ended </h1>
+                    <h2> Here were the winners: </h2>
+                    <ul id="user-list">
+                        {leaders.map(user => (
+                            <li key={user.id}>{user.nickname} - Net worth: {user.net_worth}</li>
+                        ))
+                        }
+                    </ul>
                 </div>
+                </body>
             )
         }
     }

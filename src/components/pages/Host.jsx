@@ -4,6 +4,8 @@ import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import {db,fire,fval} from '../../firebase.js';
 import {addUser,advanceDay,getUserData,getUserRef,getRoomData,getRoomRef,getNumDays} from '../firebase-access.jsx';
+import * as styles from '../styles/HostStyle.jsx';
+import {NavLink} from "react-router-dom";
 
 /*
 Possible phases:
@@ -26,6 +28,7 @@ Game structure:
 
  */
 
+// TODO @Jack make sure end game occurs on the right question index
 class Host extends Component {
 
     constructor(props) {
@@ -38,6 +41,7 @@ class Host extends Component {
             authenticated: 'no',
             listening: 'no',
             users: [],
+            leaders: null,
         }
         this.userExists = this.userExists.bind(this);
         this.updateUsers = this.updateUsers.bind(this);
@@ -122,19 +126,21 @@ class Host extends Component {
         const {password,roomId} = this.state;
         const that = this;
         var roomRef = getRoomRef(roomId);
+        console.log(roomRef);
         var roomData = await getRoomData(roomId);
-        if (!roomData) {
-            if (roomData.password === password && roomData.phase === 'no-host') {
+        console.log(roomData);
+        if (roomData) {
+            if (roomData.password === password && (roomData.phase === 'no-host' || roomData.phase === 'question' || roomData.phase === 'connection')) {
                 that.setState({
                     authenticated: 'yes',
-                    phase: 'connection',
+                    phase: (roomData.phase === 'no-host' ? 'connection' : roomData.phase),
                 });
+                roomRef.update({
+                    phase: this.state.phase
+                })
                 await addUser(roomId,"dummy user");
                 await that.updateUsers();
                 await that.initGameListener();
-                roomRef.update({
-                    phase: 'connection',
-                });
                 var numDays = getNumDays(roomId);
                 that.setState({
                     numDays: numDays,
@@ -151,7 +157,6 @@ class Host extends Component {
         const {roomId} = this.state;
         var roomRef = db.collection('Rooms').doc(roomId);
         const that = this;
-
         roomRef.collection('users').onSnapshot(function(roomData) {
             that.updateUsers();
         });
@@ -162,13 +167,17 @@ class Host extends Component {
         that.updatePhase('question');
     }
 
-    advanceQuestionLocalAndServer() {
-        const {roomId} = this.state;
+    async advanceQuestionLocalAndServer() {
+        const {roomId,questionNum} = this.state;
         const that = this;
         this.setState({
             questionNum: that.state.questionNum + 1,
         });
-        advanceDay(roomId);
+        if (questionNum >= (await getNumDays(roomId)))
+            this.setState({
+                phase: "ended",
+            })
+        await advanceDay(roomId);
     }
 
     render() {
@@ -179,49 +188,80 @@ class Host extends Component {
             end: this.endGame,
             quit: this.quitGame,
         }
-
         if (authenticated === 'no') {
             return (
-                <div className="page-container host-page">
-                    <FormControl>
-                        <TextField label="Game PIN" name="Game ID" value={roomId}
-                                   onChange={this.handleChange('roomId')}/>
-                    </FormControl>
-                    <FormControl>
-                        <TextField label="Password" type="password" name="password" value={password}
-                                   onChange={this.handleChange('password')}/>
-                    </FormControl>
-                    <Button onClick={() => this.joinGame()} variant="contained">Host</Button>
-                </div>
+                <body style={styles.body} className="page-container host-page">
+
+                    <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)'}}>
+                        <h1 style={{opacity:'80%'}}> Enter your PIN and password (if applicable) to host a game! </h1>
+                        <div style={styles.box}>
+                        <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
+                            <TextField label="Game PIN" name="Game ID" value={roomId}
+                                       onChange={this.handleChange('roomId')}/>
+                        </FormControl>
+                        <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
+                            <TextField label="Password" type="password" name="password" value={password}
+                                       onChange={this.handleChange('password')}/>
+                        </FormControl>
+                        <Button  style={styles.buttonStyle} onClick={() => this.joinGame()} variant="contained">Host</Button>
+                        </div>
+                        <NavLink to="/" style={{textDecoration: 'none'}}>
+                            <Button style={styles.buttonStyle}>
+                                Home
+                            </Button>
+                        </NavLink>
+                    </div>
+                </body>
             )
         } else if (authenticated === 'yes') {
             if (phase === 'connection') {
                 return (
-                    <div className="page-container host-page">
-                        <p> Users List </p>
-                        <ul id="user-list">
+                    <body style={styles.body}>
+                    <NavLink to="/" style={{textDecoration: 'none'}}>
+                        <Button style={styles.buttonStyle}>
+                            Disconnect
+                        </Button>
+                    </NavLink>
+                    <body style={styles.body}>
+                        <div style={styles.box} className="page-container host-page">
+                            <h3> Users List </h3>
                             {users.map(user => (
-                                <li >{user.nickname}</li>
+                                <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
                             ))
-                            }                        </ul>
-                        <button onClick={() => this.startGame()}>start stonks game</button>
-                    </div>
+                            }
+                            <button style={styles.buttonStyle} onClick={() => this.startGame()}>start game</button>
+                        </div>
+                    </body>
+                    </body>
                 )
             } else if (phase === 'question') {
                 return (
-                    <div className="page-container host-page">
+                    <body style={styles.body}>
+                    <div style={styles.box} className="page-container host-page">
                         <span>Current question: </span>
                         {' '}
                         <span className="dynamic-text">{questionNum}</span>
-                        <p> Users List </p>
-                        <ul id="user-list">
-                            {users.map(user => (
-                                <li key={user.id}>{user.nickname}</li>
-                            ))
-                            }
-                        </ul>
+                        <h3> Users List </h3>
+                        {users.map(user => (
+                            <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
+                        ))
+                        }
                         <button onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
                     </div>
+                    </body>
+                )
+            } else if (phase === 'ended') {
+                return (
+                    <body style={styles.body} className="page-container host-page">
+                    <div style={styles.box}>
+                        <h1> Game has ended </h1>
+                        <NavLink to="/" style={{textDecoration: 'none'}}>
+                            <Button style={styles.buttonStyle}>
+                                Home
+                            </Button>
+                        </NavLink>
+                    </div>
+                    </body>
                 )
             }
         }

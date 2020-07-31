@@ -2,7 +2,7 @@ import React, {Component,Fragment} from 'react';
 import {Helmet} from 'react-helmet';
 import {Link, withRouter} from 'react-router-dom';
 import Button from '@material-ui/core/Button';
-import * as styles from '../styles/Instructions.jsx';
+import * as styles from '../styles/InstructionsStyle.jsx';
 
 /*
 * Renders instructions as jsx and uses conditional rendering to only render the
@@ -22,6 +22,7 @@ class Instructions extends Component {
             - 'play' -> for players to read (in play page)
             - 'create' -> for creating the room
      */
+
     constructor(props) {
         super(props);
         this.state = {
@@ -59,7 +60,30 @@ class Instructions extends Component {
                         {info === 'play' &&
                             <div>
                                 <h1>This is the play page</h1>
-                                <p> After you join a game, you can ASDF</p>
+                                <h2>There are a couple of things you can see and can do to invest</h2>
+                                <h3>You can see</h3>
+                                <p>- Your current net worth, which is your cash + the value of your shares</p>
+                                <p>- Your current cash, which you can buy shares with</p>
+                                <p>After you select a symbol from the dropdown, you can see</p>
+                                <p>- How many shares of that symbol you have</p>
+                                <p>- How much each share costs</p>
+                                <p>- Graphs that have multiple technical indicators for the symbol</p>
+                                <p>- A box to enter the number of shares you want to buy or sell</p>
+                                <p>- The option to buy or sell a certain number of shares</p>
+                                <h2> Progression </h2>
+                                <p>The way time works in this game is that the host has predefined "stages"</p>
+                                <p>In each of these stages, you can buy or sell shares at a given price</p>
+                                <p>Whoever has the largest net worth after the last stage wins</p>
+                                <h2> Stage Control </h2>
+                                <p> For now, stage control is entirely decided by the host. So once they click "next stage"
+                                    it will be reflected across all players</p>
+                            </div>
+                        }
+
+                        {info === 'ta' &&
+                            <div>
+                                <h1> you are looking at the technical analysis indicators </h1>
+                                <h2> more explanations to be added soon </h2>
                             </div>
                         }
 

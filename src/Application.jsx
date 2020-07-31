@@ -1,15 +1,15 @@
 import React, {Fragment, useContext, Component} from 'react';
 // import {Helmet} from 'react-helmet';
 import {BrowserRouter as Router, Route} from 'react-router-dom';
-import Create from './Components/pages/Create'
-import Host from './Components/pages/Host'
-import Play from './Components/pages/Play'
-import Home from './Components/pages/Home'
+import Create from './components/pages/Create'
+import Host from './components/pages/Host'
+import Play from './components/pages/Play'
+import Home from './components/pages/Home'
 
-import UserContext from "./Components/authenticate/providers/UserProvider";
-import SignIn from "./Components/authenticate/SignIn";
-import SignUp from "./Components/authenticate/SignUp";
-import SignOut from "./Components/authenticate/SignOut";
+import UserContext from "./components/authenticate/UserProvider";
+import SignIn from "./components/authenticate/SignIn";
+import SignUp from "./components/authenticate/SignUp";
+import SignOut from "./components/authenticate/SignOut";
 
 function Application() {
     return (

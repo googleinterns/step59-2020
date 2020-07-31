@@ -6,7 +6,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import {Helmet} from 'react-helmet';
 import {Link} from 'react-router-dom';
-import * as styles from '../styles/Home.jsx';
+import * as styles from '../styles/HomeStyle.jsx';
 import Instructions from '../quiz/Instructions.jsx'
 
 class Home extends Component {
@@ -55,13 +55,12 @@ class Home extends Component {
                     />
                     }
 
-                    <div>
+                    <div style={styles.box}>
                         <Text style={styles.h1}> Toohak Stock Game! </Text>
                         <p> Toohak game is a stocks game that let's the user simulate investing in stocks in a quick,
                         game based format. It is essentially Kahoot, but instead of answering questions you are buying
                         stocks! </p>
                     </div>
-
 
                     <div style={styles.displayAlign}>
                         <section>
