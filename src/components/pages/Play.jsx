@@ -174,7 +174,6 @@ class Play extends Component {
                 </div>
             )
         } else if (phase === 'ended') {
-            console.log(leaders);
             return (
                 <body style={styles.body}>
                 <div style={styles.box}>

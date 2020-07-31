@@ -15,8 +15,6 @@ export const addUser = async (roomID, nickname) => {
     const empArray = Array.from(Array(numSymbols), () => 0);
     const startingMoney = await getStartingMoney(roomID);
 
-    console.log(userRef);
-
     const gameInfo = {
         userId: userID,
         nickname: nickname,
@@ -24,7 +22,6 @@ export const addUser = async (roomID, nickname) => {
         money_left: startingMoney,
         curShares: empArray,
     }
-    console.log(gameInfo);
 
     userRef.set(gameInfo);
     for(var i_day = 0; i_day < numDays; i_day++) {
@@ -91,8 +88,8 @@ export const changeShares = async (roomID, userID, dayIndex, changeArray) => {
 }
 
 export const initDates = async (symbols, Rounds) => {
-    let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-        .where("Symbol","in",symbols).get()
+    let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+        .where("Symbol","in", symbols).get();
     let IPOyearMax = 0;
     let today = new Date();
     let year = today.getFullYear();
@@ -104,17 +101,17 @@ export const initDates = async (symbols, Rounds) => {
 
     // No more than 7 rounds(Periods are measured in months)
     let min_window_size = 3;
-    let yearDiff = year - (IPOyearMax+1);
+    let yearDiff = year - (IPOyearMax + 1);
     let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
-    let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size))+min_window_size);
-    let startDate = new Date(IPOyearMax+1,1,1);
-    let endDate =  new Date(IPOyearMax+1,1+random_period,1);
+    let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size)) + min_window_size);
+    let startDate = new Date(IPOyearMax + 1, 1, 1);
+    let endDate =  new Date(IPOyearMax + 1, 1 + random_period, 1);
     let rand_startDate =  randomDate(startDate,endDate);
     let dates = [];
     let curr_date = rand_startDate;
     for(var i = 0; i < Rounds; i++) {
         dates.push(curr_date.toISOString().substring(0, 10));
-        curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
+        curr_date = new Date(curr_date.setMonth(curr_date.getMonth() + random_period));
     }
     const datesD = {
         "dates" : dates,
