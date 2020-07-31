@@ -25,11 +25,16 @@ class Config extends React.Component {
     }
 
     createRoom = () => {
-        console.log("create room called");
-        const {numSymbols,numRounds} = this.state;
-        var roomID = setUpRoom(numSymbols,numRounds,'');
-        this.props.updatePageType('created',roomID);
-        console.log(this.props.roomId);
+      const Industry = null;
+      const Sector = null;
+      const MarketCaps = null;
+      const {numSymbols,numRounds} = this.state;
+
+      initSymbols(Industry,Sector,MarketCaps,numSymbols).then((symbolsL) => {
+            console.log("SymbolsL is" + symbolsL);
+            let roomID = setUpRoom(symbolsL,numRounds,'');
+            this.props.updatePageType('created',roomID);
+      });
     }
 
     render() {
