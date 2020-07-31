@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import UserProvider from "./Components/authenticate/providers/UserProvider";
+import UserProvider from "./components/authenticate/UserProvider";
 import Application from "./Application"
 
 class App extends Component {
