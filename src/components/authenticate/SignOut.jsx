@@ -2,7 +2,7 @@ import React, {useState,useContext,Fragment} from "react";
 import {Helmet} from "react-helmet";
 import { Link } from "@reach/router";
 import { signOut } from "../../firebase";
-import SignIn from "../authenticate/SignIn"
+import SignIn from "./SignIn"
 import { useHistory } from "react-router"
 import {Text} from 'react-native';
 import * as styles from '../styles/SignInStyle.jsx';
