@@ -250,7 +250,7 @@ class Host extends Component {
                             <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
                         ))
                         }
-                        <button onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
+                        <button style={styles.buttonStyle} onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
                     </div>
                     </body>
                 )
