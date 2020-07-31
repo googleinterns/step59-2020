@@ -2,7 +2,7 @@ import React, {useState,useContext,Fragment} from "react";
 import {Helmet} from "react-helmet";
 import { Link } from "@reach/router";
 import { signInWithGoogle } from "../../firebase";
-import SignOut from "../authenticate/SignOut"
+import SignOut from "./SignOut"
 import { useHistory } from "react-router"
 
 const SignIn = () => {
