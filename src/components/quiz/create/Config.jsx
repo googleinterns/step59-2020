@@ -7,6 +7,7 @@ import NumericInput from 'react-numeric-input';
 import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
 
+//TODO Add UI
 class Config extends React.Component {
 
     constructor(props) {

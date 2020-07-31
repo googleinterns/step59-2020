@@ -4,12 +4,13 @@ import pandas as pd
 from datetime import date,datetime
 from dateutil.relativedelta import relativedelta
 import os
+import shutil
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe of the closing data for the symbol stock.
 Symbol- A string of the stock symbol
 roomId- The roomID the stockImage will be used for.(Naming Purposes)
@@ -17,22 +18,22 @@ end-date- The last date of the period in format 2017-08-10 00:00:00 (Naming Purp
 Returns
 Nothing.Saves Image of stock data as well as the the EMA and SMA values in line plot form
 '''
-
 def getStockImage(data,symbol,roomID,end_date):
     OpenLi = data[['Close']]
-    SMA50 = IntrinsicValue.getSMAList(data,50)
-    SMA200 =  IntrinsicValue.getSMAList(data,200)
-    EMA10 = IntrinsicValue.getEMAList(data,10)
-    OpenLi.rename(columns ={"Close":"Price"},inplace=True)
+    SMA50 = IntrinsicValue.getSMAList(OpenLi,50)
+    SMA200 =  IntrinsicValue.getSMAList(OpenLi,200)
+    EMA10 = IntrinsicValue.getEMAList(OpenLi,10)
+    OpenLi = OpenLi.rename(columns ={"Close":"Price"})
     StockPlot = pd.concat([OpenLi,EMA10,SMA50,SMA200],axis=1)
     cols = ['Price','10 Day EMA','50 Day SMA','200 Day SMA']
     colors = ['green','#FF0000','#FCFF00','#FFA600']
     StockPlot[cols].plot(color=colors)
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png'
     plt.savefig(name)
+    plt.clf()
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe of the closing data for the symbol stock.
 Symbol- A string of the stock symbol
 roomId- The roomID the stockImage will be used for.(Naming Purposes)
@@ -47,9 +48,10 @@ def getMACDImage(data,symbol,roomID,end_date):
     StockPlot[cols].plot(color=colors)
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock.png'
     plt.savefig(name)
+    plt.clf()
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe of the closing data for the symbol stock.
 Symbol- A string of the stock symbol
 roomId- The roomID the stockImage will be used for.(Naming Purposes)
@@ -64,9 +66,10 @@ def getADXImage(data,symbol,roomID,end_date):
     StockPlot[cols].plot(color=colors)
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date +' ADX Stock.png'
     plt.savefig(name)
+    plt.clf()
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe of the closing data for the symbol stock.
 Symbol- A string of the stock symbol
 roomId- The roomID the stockImage will be used for.(Naming Purposes)
@@ -86,7 +89,8 @@ def getRSIImage(data,symbol,roomID,end_date):
     StockPlot[cols].plot(color=colors)
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png'
     plt.savefig(name)
-    
+    plt.clf()
+
 def splitMonths(months):
     if months <= 12:
         return (0,months)
@@ -94,13 +98,18 @@ def splitMonths(months):
         new_months = months % 12
         years = int((months-new_months)/12)
         return (years,new_months)
+
+def deleteAllImages(img_d):
+    for root, dirs, files in os.walk(img_d):
+        for f in files:
+            os.unlink(os.path.join(root, f))
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe of the closing data for the symbol stock.
 Symbol- A string of the stock symbol
 period- 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 roomId- The roomID the stockImage will be used for.(Naming Purposes)
-end-date- The last date of the period in format 2017-08-10 00:00:00 
+end-date- The last date of the period in format 2017-08-10 00:00:00
 Returns
 Nothing.Saves Image of all stock related images
 '''
@@ -112,7 +121,10 @@ def SaveAllImages(symbol,end_date,period,roomID):
     new_years,new_months = splitMonths(period)
     start_date = date_time_obj + relativedelta(months=-new_months,years=-new_years)
     data = stock.history(end=end_date,start=start_date, interval="1D")
+    if os.path.isdir("images") is not True:
+        os.mkdir("images")
     getADXImage(data,symbol,roomID,end_date)
     getMACDImage(data,symbol,roomID,end_date)
     getRSIImage(data,symbol,roomID,end_date)
     getStockImage(data,symbol,roomID,end_date)
+    plt.close('alls')

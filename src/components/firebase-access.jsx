@@ -16,8 +16,6 @@ export const addUser = async (roomID, nickname) => {
     const empArray = Array.from(Array(numSymbols), () => 0);
     const startingMoney = await getStartingMoney(roomID);
 
-    console.log(userRef);
-
     const gameInfo = {
         userId: userID,
         nickname: nickname,
@@ -25,7 +23,6 @@ export const addUser = async (roomID, nickname) => {
         money_left: startingMoney,
         curShares: empArray,
     }
-    console.log(gameInfo);
 
     userRef.set(gameInfo);
     for(var i_day = 0; i_day < numDays; i_day++) {
@@ -92,8 +89,8 @@ export const changeShares = async (roomID, userID, dayIndex, changeArray) => {
 }
 
 export const initDates = async (symbols, Rounds) => {
-    let Stocks= await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-        .where("Symbol","in",symbols).get()
+    let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+        .where("Symbol","in", symbols).get();
     let IPOyearMax = 0;
     let today = new Date();
     let year = today.getFullYear();
@@ -105,17 +102,17 @@ export const initDates = async (symbols, Rounds) => {
 
     // No more than 7 rounds(Periods are measured in months)
     let min_window_size = 3;
-    let yearDiff = year - (IPOyearMax+1);
+    let yearDiff = year - (IPOyearMax + 1);
     let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
-    let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size))+min_window_size);
-    let startDate = new Date(IPOyearMax+1,1,1);
-    let endDate =  new Date(IPOyearMax+1,1+random_period,1);
+    let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size)) + min_window_size);
+    let startDate = new Date(IPOyearMax + 1, 1, 1);
+    let endDate =  new Date(IPOyearMax + 1, 1 + random_period, 1);
     let rand_startDate =  randomDate(startDate,endDate);
     let dates = [];
     let curr_date = rand_startDate;
     for(var i = 0; i < Rounds; i++) {
         dates.push(curr_date.toISOString().substring(0, 10));
-        curr_date = new Date(curr_date.setMonth(curr_date.getMonth()+random_period));
+        curr_date = new Date(curr_date.setMonth(curr_date.getMonth() + random_period));
     }
     const datesD = {
         "dates" : dates,
@@ -463,3 +460,52 @@ export const getUserData = async (roomID, userID) => {
 export const getUserRef = (roomID, userID) => {
     return db.collection('Rooms').doc(roomID).collection('users').doc(userID);
 }
+
+/* configuration methods */
+/* commenting out for now. TODO @john: add back in once Config works properly. */
+/*
+function compDoc(a, b){
+  if (a.value < b.value) {
+    return -1;
+  }
+  if (a.value > b.value) {
+    return 1;
+  }
+  return 0;
+}
+
+export const getIndustries = async (db) => {
+  let Industries = await db.collection("Ticker-Info").doc("Industry").get();
+  let IndustryData =  Industries.data().Industry;
+  let IndustryList = [];
+  for(const Industry in IndustryData) {
+    IndustryList.push({value: Industry, label: Industry});
+  }
+  IndustryList.push({value: null, label: "None"});
+  IndustryList.sort(compDoc);
+  return IndustryList;
+}
+
+export const getSectors = async (db) => {
+  let Sectors = await db.collection("Ticker-Info").doc("Sector").get();
+  let SectorData =  Sectors.data().Sector;
+  let SectorList = [];
+  for(const Sector in SectorData) {
+    SectorList.push({value: Sector, label: Sector});
+  }
+  SectorList.push({value: null, label:"None"});
+  SectorList.sort(compDoc);
+  return SectorList;
+}
+
+export const getMarketCaps = async (db) => {
+  let MarketCaps = await db.collection("Ticker-Info").doc("Market-Cap").get();
+  let MarketCapData =  MarketCaps.data().MarketCap;
+  let MarketCapList = [];
+  for(const Stock in MarketCapData) {
+    MarketCapList.push({value: Stock, label: Stock});
+  }
+  MarketCapList.push({value: null, label:"None"});
+  MarketCapList.sort(compDoc);
+  return MarketCapList;
+} */
