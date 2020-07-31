@@ -49,10 +49,6 @@ class Create extends Component {
         })
     }
 
-    copyToClipboard = (event) => {
-        
-    }
-
     render() {
         const {authenticated,pagetype,gameId} = this.state;
         if (authenticated == 'N/A') 
