@@ -252,7 +252,7 @@ export const setUpRoom = (numOfSymbols,rounds,password,startingMoney = 10000) =>
 export const updateNetWorth = async (roomID, userID) => {
     const numDays = await getNumDays(roomID);
     const dayIndex = await getDayIndex(roomID);
-    const prices = await getPrices(roomID, dayIndex>= numDays ? numDays - 1 : dayIndex);
+    const prices = await getPrices(roomID, dayIndex >= numDays ? numDays - 1 : dayIndex);
     const userData = await getUserData(roomID, userID);
     const userRef = getUserRef(roomID, userID);
 
