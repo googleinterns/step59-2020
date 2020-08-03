@@ -244,7 +244,7 @@ class Host extends Component {
                     <div style={styles.box} className="page-container host-page">
                         <span>Current question: </span>
                         {' '}
-                        <span className="dynamic-text">{questionNum+1}</span>
+                        <span className="dynamic-text">{questionNum + 1}</span>
                         <h3> Users List </h3>
                         {users.map(user => (
                             <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
