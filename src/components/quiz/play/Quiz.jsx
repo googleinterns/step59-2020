@@ -162,7 +162,7 @@ class Quiz extends Component {
                     <div style={styles.box}>
                     <p>Hi there, {nickname}!</p>
                     <p>You are in Room {roomId}.</p>
-                    <p>Your net worth is ${net_worth} and you have ${money_left} in cash.</p>
+                    <p>Your net worth is ${net_worth.toFixed(2)} and you have ${money_left.toFixed(2)} in cash.</p>
                     </div>
                     <Select style={styles.dropdown} onChange={this.symbolSelectHandler} options={symbolSelect}/>
                     <br/><br/>

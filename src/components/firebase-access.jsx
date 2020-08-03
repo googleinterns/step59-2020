@@ -44,7 +44,7 @@ export const advanceDay = async (roomID) => {
     });
 
     var roomData = await getRoomData(roomID);
-    if (roomData.dates.length == roomData.day_index) {
+    if (roomData.dates.length - 1 <= roomData.day_index) {
         roomRef.update({
             phase: 'ended',
         })
@@ -250,8 +250,9 @@ export const setUpRoom = (numOfSymbols,rounds,password,startingMoney = 10000) =>
 
 //TODO: this method can be called many times, which leads to latency due to a lot of awaits. See if can pass userData from other methods
 export const updateNetWorth = async (roomID, userID) => {
+    const numDays = await getNumDays(roomID);
     const dayIndex = await getDayIndex(roomID);
-    const prices = await getPrices(roomID, dayIndex);
+    const prices = await getPrices(roomID, dayIndex >= numDays ? numDays - 1 : dayIndex);
     const userData = await getUserData(roomID, userID);
     const userRef = getUserRef(roomID, userID);
 

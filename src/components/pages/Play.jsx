@@ -141,7 +141,7 @@ class Play extends Component {
                         <div style={styles.box}>
                             <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
                                 <TextField label="Nickname" name="nickname" value={nickname}
-                                           onChange={this.handleChange('roomId')}/>
+                                           onChange={this.handleChange('nickname')}/>
                             </FormControl>
                             <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
                                 <TextField label="Game PIN" name="Game ID" value={roomId}

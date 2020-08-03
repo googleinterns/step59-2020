@@ -141,7 +141,7 @@ class Host extends Component {
                 await addUser(roomId,"dummy user");
                 await that.updateUsers();
                 await that.initGameListener();
-                var numDays = getNumDays(roomId);
+                var numDays = await getNumDays(roomId);
                 that.setState({
                     numDays: numDays,
                 })
@@ -168,15 +168,15 @@ class Host extends Component {
     }
 
     async advanceQuestionLocalAndServer() {
-        const {roomId,questionNum} = this.state;
+        const {roomId,questionNum,numDays} = this.state;
         const that = this;
         this.setState({
             questionNum: that.state.questionNum + 1,
         });
-        if (questionNum >= (await getNumDays(roomId)))
+        if (questionNum + 2 >= numDays)
             this.setState({
-                phase: "ended",
-            })
+                phase: 'ended',
+            });
         await advanceDay(roomId);
     }
 
@@ -240,13 +240,13 @@ class Host extends Component {
                     <div style={styles.box} className="page-container host-page">
                         <span>Current question: </span>
                         {' '}
-                        <span className="dynamic-text">{questionNum}</span>
+                        <span className="dynamic-text">{questionNum + 1}</span>
                         <h3> Users List </h3>
                         {users.map(user => (
                             <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
                         ))
                         }
-                        <button onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
+                        <button style={styles.buttonStyle} onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
                     </div>
                     </body>
                 )
