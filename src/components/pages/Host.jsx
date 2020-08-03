@@ -180,7 +180,7 @@ class Host extends Component {
         if (questionNum + 2 >= numDays)
             this.setState({
                 phase: 'ended',
-            })
+            });
         await advanceDay(roomId);
     }
 
