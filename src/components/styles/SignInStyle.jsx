@@ -2,7 +2,6 @@ import Background from "../assets/background.jpg";
 
 export const body = {
     fontFamily: "Calibri",
-    textAlign: "center",
     backgroundImage: "url("+Background+")",
     minHeight: '100vh',
     minWidth: '100%',
@@ -17,6 +16,7 @@ export const box = {
     opacity: '0.7',
     margin: 'auto',
     shadow: '10px 10px 40px 7px rbga(0,0,0,0.5)',
+    textAlign: 'center'
 }
 
 export const buttonStyle = {
@@ -29,10 +29,13 @@ export const buttonStyle = {
     align: 'center',
     width: '18rem',
     marginTop: '1rem',
-    margin: '1rem 1rem 1rem 1rem'
+    margin: '1rem 1rem 1rem 1rem',
+    textAlign: 'center'
 }
 
 export const h1 = {
     fontWeight: 'bold',
     fontSize: '30px',
+    textAlign: 'center',
+    justifyContent: 'center'
 }

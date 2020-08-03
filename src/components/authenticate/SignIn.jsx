@@ -7,6 +7,7 @@ import { useHistory } from "react-router";
 import {Text} from 'react-native';
 import * as styles from '../styles/SignInStyle.jsx';
 import Button from "@material-ui/core/Button";
+import HomeButton from '../tools/HomeButton';
 
 const SignIn = () => {
     const [error, setError] = useState(null);
@@ -40,28 +41,16 @@ const SignIn = () => {
     <Fragment>
     <Helmet><title> Sign In </title></Helmet>
     <body style={styles.body}>
+        <HomeButton/>
         <div style={styles.box}>
-        <Text style={styles.h1}> Sign In </Text>
+          <Text style={styles.h1}> Sign In </Text>
         </div>
-        <div>
+        <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)',textAlign:'center'}}>
           {error !== null && <div>{error}</div>}
 
           <Button to="/" style={styles.buttonStyle} onClick={() => { handleSignIn() }} className="text-blue-500 hover:text-blue-600">
-                Sign in With Google
+            Sign in With Google
           </Button>
-          <p>
-            Don't have an account?{" "}
-            <Link to="/auth/signUp" className="text-blue-500 hover:text-blue-600">
-              Sign up here
-            </Link>{" "}
-            <br />{" "}
-          </p>
-          <p>
-              <Link to="/" onClick={() => { handleHome() }} className="text-blue-500 hover:text-blue-600">
-                Home
-              </Link>{" "}
-              <br />{" "}
-          </p>
         </div>
       </body>
     </Fragment>

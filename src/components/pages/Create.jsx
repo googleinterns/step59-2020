@@ -8,6 +8,7 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {Text} from 'react-native';
 import * as styles from '../styles/CreateStyle.jsx';
 import Button from "@material-ui/core/Button";
+import HomeButton from '../tools/HomeButton.jsx';
 
 class Create extends Component {
 
@@ -61,7 +62,8 @@ class Create extends Component {
                 }
 
                 {pagetype === 'created' && (
-                    <div>
+                    <div style={styles.back}>
+                        <HomeButton/>
                         <body style={styles.body}>
                             <div style={styles.box}>
                                 <Text style={styles.h1}>Successfully created room!</Text>

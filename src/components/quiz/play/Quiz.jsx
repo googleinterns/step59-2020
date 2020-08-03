@@ -109,6 +109,10 @@ class Quiz extends Component {
         if ((await makeInvestment(roomId,userId,questionNum,changeArray)) == false) {
             alert('well something went wrong ( ͡° ͜ʖ ͡°).\nPlease check that you are buying what you can afford and selling what you already have.');
         }
+
+        else {
+            alert('Investment recorded!');
+        }
     }
 
     toggleInstructions() {
@@ -136,6 +140,7 @@ class Quiz extends Component {
                 <Instructions
                     info='play'
                     closeInstructions={this.toggleInstructions.bind(this)}
+                    style={{textAlign:'center'}}
                 />
                 }
 
@@ -144,15 +149,9 @@ class Quiz extends Component {
                     info='ta'
                     closeInstructions={this.toggleTA.bind(this)}
                 />
-
                 }
 
                 <div>
-                    <NavLink to="/" style={{textDecoration: 'none'}}>
-                        <Button style={styles.buttonStyle}>
-                            Disconnect
-                        </Button>
-                    </NavLink>
                     <Button style={styles.buttonStyle} onClick={this.toggleInstructions.bind(this)}>
                         Instructions
                     </Button>
@@ -163,6 +162,7 @@ class Quiz extends Component {
                     <p>Hi there, {nickname}!</p>
                     <p>You are in Room {roomId}.</p>
                     <p>Your net worth is ${net_worth.toFixed(2)} and you have ${money_left.toFixed(2)} in cash.</p>
+                    <p>Round: {questionNum}</p>
                     </div>
                     <Select style={styles.dropdown} onChange={this.symbolSelectHandler} options={symbolSelect}/>
                     <br/><br/>
