@@ -4,23 +4,19 @@ export const body = {
     fontFamily: "Calibri",
     textAlign: "center",
     backgroundImage: "url("+Background+")",
-    minHeight: '105vh',
+    minHeight: '100vh',
     minWidth: '100%',
 }
 
 export const box = {
-    background: 'rgba(255,255,255,0.8)',
-    fontWeight: 'bold',
+    background: 'white',
     borderRadius: '10px',
+    padding: '10px',
+    width: '60%',
     fontSize: '30px',
-    backgroundOpacity: '0.6',
+    opacity: '0.7',
     margin: 'auto',
-    marginTop: '1rem',
-    marginBottom: '1rem',
-    marginLeft: '2rem',
-    marginRight: '2rem',
-    textAlign: 'center',
-    boxShadow: '0 3px 5px 2px rgba(0,0,0,.3)'
+    shadow: '10px 10px 40px 7px rbga(0,0,0,0.5)',
 }
 
 export const buttonStyle = {
@@ -31,13 +27,12 @@ export const buttonStyle = {
     padding: '20px',
     boxShadow: '0 3px 5px 2px rgba(255,105,135,.3)',
     align: 'center',
-    width: '8rem',
+    width: '18rem',
     marginTop: '1rem',
-    margin: '1rem 1rem 1rem 1rem',
-    zIndex: '1',
+    margin: '1rem 1rem 1rem 1rem'
 }
 
-export const smallFont = {
-    fontSize: '18px',
-    opacity: '80%',
+export const h1 = {
+    fontWeight: 'bold',
+    fontSize: '30px',
 }

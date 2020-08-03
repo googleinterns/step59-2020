@@ -119,6 +119,18 @@ class Instructions extends Component {
                         </div>
                         }
 
+                        {info == 'create' &&
+                        
+                            <div>
+                                <h1>You are on the Create Room page.</h1>
+                                <p>Here, you can customize your game settings.</p>
+                                <br/>
+                                <h3>Rounds</h3>
+                                <p>You can choose to play anywhere from 1 to 7 rounds.</p>
+                                <h3>Symbols</h3>
+                                <p>You can choose how many symbols you want to track during the game.</p>
+                            </div>
+                        }
                     </div>
                 <div> <Button style={styles.buttonStyle} onClick={this.props.closeInstructions}> Close </Button> </div>
 
