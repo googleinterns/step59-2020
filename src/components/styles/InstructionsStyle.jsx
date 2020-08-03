@@ -17,6 +17,10 @@ export const popup_inner = {
     background: 'white',
 }
 
+export const tech_a = {
+    fontSize: '0.7em'
+}
+
 export const buttonStyle = {
     background: 'linear-gradient(45deg,#FE6B8B 30%, #FF8E53 90%)',
     borderRadius: 3,

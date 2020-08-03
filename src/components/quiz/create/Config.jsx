@@ -6,8 +6,6 @@ import Select from 'react-select';
 import NumericInput from 'react-numeric-input';
 import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
-
-//TODO Add UI
 import Instructions from "../Instructions";
 import {Text} from 'react-native';
 import * as styles from '../../styles/CreateStyle.jsx';
