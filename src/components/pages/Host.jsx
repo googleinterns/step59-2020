@@ -177,7 +177,7 @@ class Host extends Component {
         console.log(questionNum);
         console.log("numDays");
         console.log(numDays);
-        if (questionNum+2 >= numDays)
+        if (questionNum + 2 >= numDays)
             this.setState({
                 phase: 'ended',
             })
