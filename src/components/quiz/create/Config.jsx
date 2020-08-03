@@ -30,7 +30,6 @@ class Config extends React.Component {
         const {numSymbols,numRounds} = this.state;
         var roomID = setUpRoom(numSymbols,numRounds + 1,'');
         this.props.updatePageType('created',roomID);
-        console.log(this.props.roomId);
     }
 
     render() {
