@@ -4,6 +4,14 @@ import {Link, withRouter} from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import * as styles from '../styles/InstructionsStyle.jsx';
 
+/*
+* Renders instructions as jsx and uses conditional rendering to only render the
+* specified type of instruction.
+*
+* Can easily be rendered in different pages by passing in the type
+* of information to display as props.
+*/
+
 class Instructions extends Component {
     /*
         Prop property will be all given under 'info'
@@ -21,7 +29,7 @@ class Instructions extends Component {
         }
     }
 
-    // TODO add more instructions
+    // TODO: (@johnkongtcheu) add technical indicator instructions
     render() {
         const {info} = this.props;
         return (
@@ -79,6 +87,18 @@ class Instructions extends Component {
                             </div>
                         }
 
+                        {info == 'create' &&
+                        
+                            <div>
+                                <h1>You are on the Create Room page.</h1>
+                                <p>Here, you can customize your game settings.</p>
+                                <br/>
+                                <h3>Rounds</h3>
+                                <p>You can choose to play anywhere from 1 to 7 rounds.</p>
+                                <h3>Symbols</h3>
+                                <p>You can choose how many symbols you want to track during the game.</p>
+                            </div>
+                        }
                     </div>
                 <div> <Button style={styles.buttonStyle} onClick={this.props.closeInstructions}> Close </Button> </div>
 

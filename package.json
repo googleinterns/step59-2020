@@ -15,16 +15,18 @@
     "npm-install-missing": "^0.1.4",
     "react": "^16.13.1",
     "react-bootstrap": "^1.2.2",
+    "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
     "react-helmet": "^6.1.0",
     "react-hot-loader": "^4.12.21",
-    "react-native": "^0.63.2",
     "react-native-web": "^0.13.4",
     "react-numeric-input": "^2.2.3",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.1",
-    "react-select": "^3.1.0"
+    "react-select": "^3.1.0",
+    "tsutils": "^3.17.1",
+    "typescript": "^3.9.7"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -56,6 +58,7 @@
     "chai": "^4.2.0",
     "mocha": "^8.0.1",
     "node-sass": "^4.14.1",
-    "regenerator-runtime": "^0.13.7"
+    "regenerator-runtime": "^0.13.7",
+    "sinon": "^9.0.2"
   }
 }
