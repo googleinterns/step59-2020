@@ -14,9 +14,10 @@ const SYMBOLS = ['mockstock'];
 const NUMSYMBOLS = 1;
 const ROUNDS = 2;
 const STARTINGMONEY = 100;
-const DAYINDEX = 0;
+var DAYINDEX = 0;
 const NICKNAME = 'mockname';
 const INVESTMENTS = 'investments';
+const DATES = ['mock0', 'mock1'];
 
 const SYMBOL_PRICES = [5, 10];
 
@@ -25,14 +26,14 @@ var symbolRef = null;
 var userRef = null;
 
 /* load in mock data */
-export const setUpMockRoom = () => {
+const setUpMockRoom = () => {
 
   // mock room info
   roomRef = db.collection(ROOMS).doc(ROOMID);
 
   const PASSWORD = '';
   const ROOMINFO = {
-    dates: ['mock0', 'mock1'],
+    dates: DATES,
     day_index: DAYINDEX,
     password: PASSWORD,
     phase: null,
@@ -46,12 +47,12 @@ export const setUpMockRoom = () => {
   userRef = roomRef.collection(USERS).doc(USERID);
 }
 
-export const addMockSymbolData = () => {
+const addMockSymbolData = () => {
   const pricesRef = symbolRef.doc('Prices');
   pricesRef.set({prices: SYMBOL_PRICES});
 }
 
-export const addMockUser = () => {
+const addMockUser = () => {
   const emptyShares = Array.from(Array(NUMSYMBOLS), () => 0);
   const gameInfo = {
     userId: USERID,
@@ -81,13 +82,13 @@ describe("test getPrices", () => {
     dbRoundPrices = await fireaccess.getPrices(ROOMID, DAYINDEX);
     assert.isArray(dbRoundPrices, "prices is not an array");
     assert.deepEqual([5], dbRoundPrices);
-  }).timeout(5000);
+  }).timeout(0);
 });
 
 
 addMockUser();
 
-export const verifyHelper = async (changeArray) => {
+const verifyHelper = async (changeArray) => {
   return await fireaccess.verifyOk(ROOMID, USERID, DAYINDEX,
     changeArray, dbRoundPrices);
 }
@@ -110,7 +111,7 @@ describe("test makeInvestment methods", () => {
 
     const dbMoney = dbUserData.money_left;
     assert.equal(90, dbMoney);
-  }).timeout(5000);
+  }).timeout(0);
 
   it("check changeShares", async () => {
     await fireaccess.changeShares(ROOMID, USERID, DAYINDEX, CHANGEARRAY);
@@ -130,7 +131,7 @@ describe("test makeInvestment methods", () => {
 
     const roundInvestmentsArray = dbInvestmentsRoundData.change;
     assert.deepEqual(CHANGEARRAY, roundInvestmentsArray);
-  }).timeout(5000);
+  }).timeout(0);
 
   it("check verifyOk", async () => {
 
@@ -147,65 +148,121 @@ describe("test makeInvestment methods", () => {
       "verifyOk failed - thought an OK trade was bad");
     assert.isFalse(await verifyHelper([-10]), 
       "verifyOk failed - thought an OK trade was bad");  // no shares to sell
-  }).timeout(5000);
+  }).timeout(0);
 });
 
 describe("test advanceDay", () => {
   
-  it("check value is increased by one", async () => {
-    fireaccess.advanceDay(ROOMID);
+  it("check net_worth is correctly updated", async () => {
+      await fireaccess.advanceDay(ROOMID);
 
-    const dbRoomDoc = await db.collection(ROOMS).doc(ROOMID).get();
-    const dbRoomData = dbRoomDoc.data();
+      // need to use listener since net worth is updated synchronously
+      var unsubscribe = db.collection(ROOMS).doc(ROOMID).collection(USERS)
+        .doc(USERID).onSnapshot((userDoc) => {
+          const userData = userDoc.data();
+          const expectedWorth = 110;
+
+          assert.equal(expectedWorth, userData.net_worth);
+        });
+
+      unsubscribe();
+  }).timeout(0);
+
+  it("check day_index is updated", async () => {
+    var dbRoomDoc = await db.collection(ROOMS).doc(ROOMID).get();
+    var dbRoomData = dbRoomDoc.data();
     const dbDayIndex = dbRoomData.day_index;
 
-    assert.equal((DAYINDEX+1), dbDayIndex);
-  }).timeout(5000);
+    DAYINDEX++;
+
+    assert.equal(DAYINDEX, dbDayIndex);
+  }).timeout(0);
 });
+
+// TODO: test getLeaders
 
 /* ********* Tests involving HTTP requests ********* */
 
 // stub initialize quiz, populate db with mock data
 // initialize quiz should set the prices and image urls in db
 
+const PERIODLEN = 1;
+const ENDDATE = DATES[1];
+const PRICES = 'Prices';
+const IMAGES = 'Images';
+
+/* make the stub write mock data to database */
+const createQuizStub = (initializeQuizStub) => {
+  const MOCKURL = 'mock-url';
+
+  initializeQuizStub.callsFake(async () => {
+
+    // set prices data
+    symbolRef.doc(PRICES).set({
+      prices: SYMBOL_PRICES
+    });
+
+    // set image urls
+    symbolRef.doc(IMAGES).set({
+      ADXpublic_image_Url: {
+        mock0: MOCKURL,
+        mock1: MOCKURL
+      },
+      MACDpublic_image_url: {
+        mock0: MOCKURL,
+        mock1: MOCKURL
+      },
+      RSIpublic_image_url: {
+        mock0: MOCKURL,
+        mock1: MOCKURL
+      },
+      Stockpublic_image_url: {
+        mock0: MOCKURL,
+        mock1: MOCKURL
+      },
+    });
+  });
+}
+
+const DATESDICT = {
+  "dates": DATES,
+  "period": PERIODLEN,
+};
+
+const createDatesStub = (initDatesStub) => {
+  initDatesStub.callsFake(async () => {
+    return DATESDICT;
+  })
+}
+
 describe("test setUpRoom", () => {
   let initializeQuizStub;
+  let initDatesStub;
+  const newRoomID = null;
 
   beforeEach(() => {
     initializeQuizStub = sinon.stub(fireaccess, "initializeQuiz");
+    createQuizStub(initializeQuizStub);
+
+    initDatesStub = sinon.stub(fireaccess, "initDates");
+    createDatesStub(initDatesStub);
   });
 
   afterEach(() => {
     initializeQuizStub.restore();
+    initDatesStub.restore();
   });
 
+  // test methods are stubbed properly
   it("test initializeQuiz", async () => {
-    
-    // params necessary for initializeQuiz
-    const PERIODLEN = 1;
-    const ENDDATE = "03-01-2015";
-    const PRICES = 'Prices';
-    const IMAGES = 'Images';
-
-    // stubs function
-    initializeQuizStub.callsFake(function() => {
-      
-      // set prices data
-      symbolRef.doc(PRICES).set({
-        prices: SYMBOL_PRICES
-      });
-
-      // set image urls
-      symbolRef.doc(IMAGES).set({
-        RSIPublicImagesUrl: {ENDDATE: 'mock-url'}
-      });
-
-      return Promise.resolve('initializeQuizPromise');
-    });
-
-    // call the function
     const res = await fireaccess.initializeQuiz(SYMBOLS, ROOMID, PERIODLEN, ENDDATE);
-    assert.equal('initializeQuizPromise', res);
-  }).timeout(5000);
-})
+    assert.notExists(res, "initQuiz returned something when it shouldn't have.");
+  }).timeout(0);
 
+  it("test initDates", async () => {
+    const res = await fireaccess.initDates(SYMBOLS, ROUNDS);
+    assert.deepEqual(res, DATESDICT);
+  }).timeout(0);
+
+  // TODO: test getChartUrls, getCharts
+});
