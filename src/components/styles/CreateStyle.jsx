@@ -1,5 +1,12 @@
 import Background from "../assets/background.jpg";
 
+export const back = {
+    fontFamily: "Calibri",
+    backgroundImage: "url("+Background+")",
+    minHeight: '100vh',
+    minWidth: '100%', 
+}
+
 export const body = {
     fontFamily: "Calibri",
     textAlign: "center",

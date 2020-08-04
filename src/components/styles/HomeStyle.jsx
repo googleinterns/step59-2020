@@ -8,10 +8,10 @@ export const h1 = {
 
 export const body = {
     fontFamily: "Calibri",
-    textAlign: "center",
     backgroundImage: "url("+Background+")",
     minHeight: '100vh',
     minWidth: '100%',
+    textAlign: 'center'
 }
 
 export const center = {

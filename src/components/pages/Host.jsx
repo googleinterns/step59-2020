@@ -6,6 +6,7 @@ import {db,fire,fval} from '../../firebase.js';
 import {addUser,advanceDay,getUserData,getUserRef,getRoomData,getRoomRef,getNumDays} from '../firebase-access.jsx';
 import * as styles from '../styles/HostStyle.jsx';
 import {NavLink} from "react-router-dom";
+import HomeButton from '../tools/HomeButton';
 
 /*
 Possible phases:
@@ -190,8 +191,8 @@ class Host extends Component {
         if (authenticated === 'no') {
             return (
                 <body style={styles.body} className="page-container host-page">
-
-                    <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)'}}>
+                    <HomeButton/>
+                    <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)',textAlign:'center'}}>
                         <h1 style={{opacity:'80%'}}> Enter your PIN and password (if applicable) to host a game! </h1>
                         <div style={styles.box}>
                         <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
@@ -204,11 +205,6 @@ class Host extends Component {
                         </FormControl>
                         <Button  style={styles.buttonStyle} onClick={() => this.joinGame()} variant="contained">Host</Button>
                         </div>
-                        <NavLink to="/" style={{textDecoration: 'none'}}>
-                            <Button style={styles.buttonStyle}>
-                                Home
-                            </Button>
-                        </NavLink>
                     </div>
                 </body>
             )
@@ -222,13 +218,17 @@ class Host extends Component {
                         </Button>
                     </NavLink>
                     <body style={styles.body}>
+                        <h2 style={{textAlign:'center'}}>Room ID: {roomId}</h2>
                         <div style={styles.box} className="page-container host-page">
-                            <h3> Users List </h3>
-                            {users.map(user => (
-                                <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
-                            ))
-                            }
-                            <button style={styles.buttonStyle} onClick={() => this.startGame()}>start game</button>
+                            <h3>Users List:</h3>
+                        
+                            <div style={{textAlign:'center'}}>
+                                {users.map(user => (
+                                    <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
+                                ))
+                                }
+                                <button style={styles.buttonStyle} onClick={() => this.startGame()}>START GAME</button>
+                            </div>
                         </div>
                     </body>
                     </body>
@@ -236,6 +236,11 @@ class Host extends Component {
             } else if (phase === 'question') {
                 return (
                     <body style={styles.body}>
+                        <NavLink to="/" style={{textDecoration: 'none'}}>
+                            <Button style={styles.buttonStyle}>
+                                Disconnect
+                            </Button>
+                        </NavLink>
                     <div style={styles.box} className="page-container host-page">
                         <span>Current question: </span>
                         {' '}
@@ -245,21 +250,17 @@ class Host extends Component {
                             <p style={styles.smallFont}>{user.nickname} - ${user.net_worth}</p>
                         ))
                         }
-                        <button style={styles.buttonStyle} onClick={() => this.advanceQuestionLocalAndServer()}>next question</button>
+                        <button style={styles.buttonStyle} onClick={() => this.advanceQuestionLocalAndServer()}>NEXT QUESTION</button>
                     </div>
                     </body>
                 )
             } else if (phase === 'ended') {
                 return (
                     <body style={styles.body} className="page-container host-page">
-                    <div style={styles.box}>
-                        <h1> Game has ended </h1>
-                        <NavLink to="/" style={{textDecoration: 'none'}}>
-                            <Button style={styles.buttonStyle}>
-                                Home
-                            </Button>
-                        </NavLink>
-                    </div>
+                        <HomeButton/>
+                        <div style={styles.box}>
+                            <h1> Game has ended </h1>
+                        </div>
                     </body>
                 )
             }

@@ -8,11 +8,10 @@ import {addUser,getCharts,getSymbols,getDayIndex,getPrices,getUserData,getUserRe
     getCash,getShares,getRoomData,getRoomRef,getNetWorth,updateNetWorth,getLeaders} from '../firebase-access.jsx';
 import {Helmet} from 'react-helmet';
 import {isRedirect} from "@reach/router";
-import * as styles from "../styles/QuizStyle";
+import * as styles from "../styles/PlayStyle";
 import {NavLink} from "react-router-dom";
+import HomeButton from '../tools/HomeButton';
 
-
-//TODO @Jack Fix NAN issue for leaderboard
 class Play extends Component {
 
     /*
@@ -136,7 +135,9 @@ class Play extends Component {
         if (phase === 'not-joined') {
             return (
                 <body style={styles.body} className="page-container host-page">
-                    <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)'}}>
+                    <HomeButton/>
+
+                    <div style={{position:'absolute',left:'50%',top:'40%',transform:'translate(-50%,-50%)',textAlign:'center'}}>
                         <h1 style={{opacity:'80%'}}> Enter your nickname, room PIN and password (if applicable) to join a game! </h1>
                         <div style={styles.box}>
                             <FormControl style={{margin:'1rem 1rem 1rem 1rem'}}>
@@ -153,38 +154,44 @@ class Play extends Component {
                             </FormControl>
                             <Button  style={styles.buttonStyle} onClick={() => this.joinGame()} variant="contained">Join game</Button>
                         </div>
-                        <NavLink to="/" style={{textDecoration: 'none'}}>
-                            <Button style={styles.buttonStyle}>
-                                Home
-                            </Button>
-                        </NavLink>
                     </div>
                 </body>
             )
         } else if (phase === 'connection') {
             return (
-                <div>
-                    <p> Connected. Please wait for host to start game. </p>
-                </div>
+                <body style={styles.body}>
+                    <HomeButton/>
+                    <div style={{textAlign:'center'}}>
+                        <h3> Connected. Please wait for host to start game. </h3>
+                    </div>
+                    
+                </body>
             )
         } else if (phase === 'question') {
             return (
-                <div>
+                <div style={styles.back}>
+                    <NavLink to="/" style={{textDecoration: 'none'}}>
+                        <Button style={styles.buttonStyle}>
+                            Disconnect
+                        </Button>
+                    </NavLink>
                     <Quiz {...this.state}></Quiz>
                 </div>
             )
         } else if (phase === 'ended') {
             return (
                 <body style={styles.body}>
+                    <HomeButton/>
                 <div style={styles.box}>
-                    <h1> Game has ended </h1>
+                    <h1 style={{textAlign:'center'}}> Game has ended </h1>
                     <h2> Here were the winners: </h2>
-                    <ul id="user-list">
+                    <ol id="user-list">
                         {leaders.map(user => (
-                            <li key={user.id}>{user.nickname} - Net worth: {user.net_worth}</li>
+                            <li key={user.id}><b>{user.nickname}</b>
+                            <p>Net worth: ${user.net_worth}</p></li>
                         ))
                         }
-                    </ul>
+                    </ol>
                 </div>
                 </body>
             )
