@@ -128,13 +128,13 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   formData.append('end-date',JSON.stringify(endDates));
   var token =  localStorage.getItem('Token');
   try{
-      let response = await fetch("http://localhost:8080/get_prices", {
+      let response = await fetch("/get_prices", {
         method: 'POST',
         body: formData,
         //Comment this line back in when you want to deploy , and get rid of localhost
-        // headers: {
-        //   Authorization: ("Bearer " + token)
-        // },
+        headers: {
+          Authorization: ("Bearer " + token)
+        },
       },100000)
       console.log(response);
   }
@@ -143,28 +143,28 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   }
   formData.append('periodLen',periodLen)
   try{
-      let response  = await fetch('http://localhost:8080/get_stock_image', {
+      let response  = await fetch('/get_stock_image', {
           method: 'POST',
           body: formData,
           //Comment this line back in when you want to deploy , and get rid of localhost
-          // headers: {
-          //   Authorization:("Bearer " + token)
-          // }
+          headers: {
+            Authorization:("Bearer " + token)
+          }
       },100000)
-      console.log(await response.json());
+      console.log(response);
   }
   catch(error){
       console.log("Error is " +  error)
   }
 }
-export const initSymbols = async(Industry,Sector,MarketCap,NumOfSymbols) =>{
+export const initSymbols = async(industry,Sector,MarketCap,NumOfSymbols) =>{
   let symbols = [];
-  if(atLeastTwo(Industry,Sector,MarketCap)){
+  if(atLeastTwo(industry,Sector,MarketCap)){
       //In the case where a person wants to query using multiple features it may return a larger request,
       //so we send it to the backend
       let formData = new FormData();
-      if(Industry)
-          formData.append('Industry',Industry);
+      if(industry)
+          formData.append('Industry',industry);
       if(Sector)
           formData.append('Sector',Sector);
       if(MarketCap)
@@ -172,13 +172,13 @@ export const initSymbols = async(Industry,Sector,MarketCap,NumOfSymbols) =>{
       formData.append('NumOfSymbols',NumOfSymbols);
       var token =  localStorage.getItem('Token');
       try{
-          let response = await fetch('https://localhost:8080/get_symbols ', {
+          let response = await fetch('/get_symbols ', {
               method: 'POST',
               body: formData,
               //Comment this line back in when you want to deploy , and get rid of localhost
-              // headers: {
-              //   Authorization: (' Bearer ' + token)
-              // }
+              headers: {
+                Authorization: (' Bearer ' + token)
+              }
           },100000)
           let symbolJson = await response.json();
           if (symbolJson.hasOwnProperty("Error")){
@@ -193,16 +193,16 @@ export const initSymbols = async(Industry,Sector,MarketCap,NumOfSymbols) =>{
 
   }
   // All of the rest of the values use a search by Xpos to make the query as small as possible(O(numOfSymbols))
-  else if(Industry !== null){
+  else if(industry !== null){
 
-      let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
-      let numOfIndustries= IndustryInfo.data().Industry[Industry];
+      let industryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
+      let numOfIndustries= industryInfo.data().Industry[industry];
       let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
-      let Industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-          .where("Industry","==",Industry)
+      let industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+          .where("Industry","==",industry)
           .where("IndustryPos","<=", cutoff)
           .orderBy("IndustryPos").limit(NumOfSymbols).get();
-      Industries.forEach(function(doc){
+      industries.forEach(function(doc){
           symbols.push(doc.data().Symbol);
       })
   }
@@ -476,7 +476,7 @@ function compDoc(a, b){
 }
 
 export const getIndustries = async (db) => {
-  let Industries = await db.collection("Ticker-Info").doc("Industry").get();
+  let Industries = await db.collection("Ticker-Info").doc("Indust").get();
   let IndustryData =  Industries.data().Industry;
   let IndustryList = [];
   for(const Industry in IndustryData) {

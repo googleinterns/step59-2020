@@ -137,7 +137,7 @@ class Host extends Component {
                 roomRef.update({
                     phase: this.state.phase
                 })
-                await addUser(roomId,"dummy user");
+                // await addUser(roomId,"dummy user");
                 await that.updateUsers();
                 await that.initGameListener();
                 var numDays = await getNumDays(roomId);

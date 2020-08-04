@@ -36,7 +36,6 @@ class Config extends React.Component {
       const {numSymbols,numRounds} = this.state;
 
       initSymbols(Industry,Sector,MarketCaps,numSymbols).then((symbolsL) => {
-            console.log("SymbolsL is" + symbolsL);
             let roomID = setUpRoom(symbolsL,numRounds,'');
             this.props.updatePageType('created',roomID);
       });
