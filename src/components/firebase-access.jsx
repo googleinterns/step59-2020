@@ -403,6 +403,23 @@ export const getUserRef = (roomID, userID) => {
     return db.collection('Rooms').doc(roomID).collection('users').doc(userID);
 }
 
+/**
+ * Delete entire room document at end of game.
+ * Call the 'recursiveDelete' callable function with a path to initiate
+ * a server-side delete.
+ */
+export const deleteAtPath = (path) => {
+    var deleteFn = firebase.functions().httpsCallable('recursiveDelete');
+    deleteFn({ path: path })
+        .then(function(result) {
+            logMessage('Delete success: ' + JSON.stringify(result));
+        })
+        .catch(function(err) {
+            logMessage('Delete failed, see console,');
+            console.warn(err);
+        });
+}
+
 /* configuration methods */
 /* commenting out for now. TODO @john: add back in once Config works properly. */
 /*
