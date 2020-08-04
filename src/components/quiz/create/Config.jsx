@@ -11,6 +11,7 @@ import Instructions from "../Instructions";
 import {Text} from 'react-native';
 import * as styles from '../../styles/CreateStyle.jsx';
 import Button from "@material-ui/core/Button";
+import HomeButton from '../../tools/HomeButton';
 
 class Config extends React.Component {
 
@@ -46,7 +47,8 @@ class Config extends React.Component {
     render() {
         const {numSymbols,numRounds,displayInstructions} = this.state;
         return (
-            <div>
+            <div style={styles.back}>
+                <HomeButton/>
                 <body style={styles.body}>
 
                     {displayInstructions &&
