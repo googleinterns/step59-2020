@@ -17,13 +17,6 @@ exports.recursiveDelete = functions
     memory: '2GB'
   })
   .https.onCall(async (data, context) => {
-    // Only allow admin users to execute this function.
-    if (!(context.auth && context.auth.token && context.auth.token.admin)) {
-      throw new functions.https.HttpsError(
-        'permission-denied',
-        'Must be an administrative user to initiate delete.'
-      );
-    }
 
     const path = data.path;
     console.log(
