@@ -29,7 +29,6 @@ Game structure:
 
  */
 
-// TODO @Jack make sure end game occurs on the right question index
 class Host extends Component {
 
     constructor(props) {
