@@ -102,6 +102,10 @@ export const initDates = async (symbols, Rounds) => {
 
     // No more than 7 rounds(Periods are measured in months)
     let min_window_size = 3;
+    if(IPOyearMax < 2000)
+    {
+      IPOyearMax = 2000 // Just to make sure there aren't any issue
+    }
     let yearDiff = year - (IPOyearMax + 1);
     let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
     let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size)) + min_window_size);
@@ -136,7 +140,7 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
           Authorization: ("Bearer " + token)
         },
       },100000)
-      console.log(response);
+      console.log(response); // This is here until the next pr gets approved.
   }
   catch(err) {
       console.log("Error is " +  err)
@@ -151,7 +155,7 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
             Authorization:("Bearer " + token)
           }
       },100000)
-      console.log(response);
+      console.log(response); // Same as above
   }
   catch(error){
       console.log("Error is " +  error)
@@ -236,9 +240,7 @@ export const initSymbols = async(industry,Sector,MarketCap,NumOfSymbols) =>{
 
       let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
       let numOfStocks = StockInfo.data().NumOfStocks - 1;
-      console.log("NumOfSymbols is " + NumOfSymbols + "NumOfStocks is " + numOfStocks);
       let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
-      console.log("cutoff is" + cutoff);
       let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("RandomPos",">=", cutoff)
           .orderBy("RandomPos").limit(NumOfSymbols).get()

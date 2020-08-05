@@ -126,9 +126,7 @@ class Host extends Component {
         const {password,roomId} = this.state;
         const that = this;
         var roomRef = getRoomRef(roomId);
-        console.log(roomRef);
         var roomData = await getRoomData(roomId);
-        console.log(roomData);
         if (roomData) {
             if (roomData.password === password && (roomData.phase === 'no-host' || roomData.phase === 'question' || roomData.phase === 'connection')) {
                 that.setState({
