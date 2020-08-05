@@ -41,6 +41,8 @@ class Host extends Component {
             authenticated: 'no',
             listening: 'no',
             users: [],
+            images: null,
+            prices: null,
             leaders: null,
         }
         this.userExists = this.userExists.bind(this);
@@ -56,6 +58,12 @@ class Host extends Component {
 
     componentDidMount() {
         const {roomId} = this.state;
+        window.addEventListener("storage", e => {
+            let prices = localStorage.getItem('Prices');
+            let images = localStorage.getItem('images');
+            this.setState({prices: prices});
+            this.setState({images: images});
+        });
     }
 
     componentDidChange() {

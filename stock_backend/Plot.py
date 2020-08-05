@@ -18,7 +18,7 @@ end-date- The last date of the period in format 2017-08-10 00:00:00 (Naming Purp
 Returns
 Nothing.Saves Image of stock data as well as the the EMA and SMA values in line plot form
 '''
-def getStockImage(data,symbol,roomID,end_date):
+def getStockImage(data,symbol,roomID,end_date,period):
     OpenLi = data[['Close']]
     SMA50 = IntrinsicValue.getSMAList(OpenLi,50)
     SMA200 =  IntrinsicValue.getSMAList(OpenLi,200)
@@ -27,10 +27,13 @@ def getStockImage(data,symbol,roomID,end_date):
     StockPlot = pd.concat([OpenLi,EMA10,SMA50,SMA200],axis=1)
     cols = ['Price','10 Day EMA','50 Day SMA','200 Day SMA']
     colors = ['green','#FF0000','#FCFF00','#FFA600']
-    StockPlot[cols].plot(color=colors)
+    plot = StockPlot[cols].plot(color=colors,title="Stock")
+    plot.set_xlabel(("Dates" + str(period) + "Months"))
+    plot.set_ylabel("Stock")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png'
+    print(f'End date is {end_date}')
+    print(f'Xticks are {plt.xticks()}')
     plt.savefig(name)
-    plt.clf()
 
 '''
 Paramaters:
@@ -41,14 +44,17 @@ end-date- The last date of the period in format 2017-08-10 00:00:00 (Naming Purp
 Returns
 Nothing.Saves Image of MACD data and signal data in line plot form.
 '''
-def getMACDImage(data,symbol,roomID,end_date):
+def getMACDImage(data,symbol,roomID,end_date,period):
     StockPlot = IntrinsicValue.getMACDList(data)
     cols = ['MACD','Signal']
     colors = ['green','yellow']
-    StockPlot[cols].plot(color=colors)
+    plot = StockPlot[cols].plot(color=colors,title="MACD")
+    plot.set_xlabel(("Dates" + str(period) + "Months"))
+    plot.set_ylabel("MACD")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock.png'
+    print(f'Xticks are {plt.xticks()}')
+    print(f'End date is {end_date}')
     plt.savefig(name)
-    plt.clf()
 
 '''
 Paramaters:
@@ -59,14 +65,17 @@ end-date- The last date of the period in format 2017-08-10 00:00:00 (Naming Purp
 Returns
 Nothing.Saves Image of ADX data and positive and negative directional indicators in line plot form.
 '''
-def getADXImage(data,symbol,roomID,end_date):
+def getADXImage(data,symbol,roomID,end_date,period):
     StockPlot = IntrinsicValue.getADXList(data)
     cols = ['neg_directional_indicator','pos_directional_indicator','adx']
     colors = ['red','green','black']
-    StockPlot[cols].plot(color=colors)
+    plot = StockPlot[cols].plot(color=colors,title="ADX")
+    plot.set_xlabel(("Dates" + str(period) + "Months"))
+    plot.set_ylabel("ADX")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date +' ADX Stock.png'
+    print(f'Xticks are {plt.xticks()}')
+    print(f'End date is {end_date}')
     plt.savefig(name)
-    plt.clf()
 
 '''
 Paramaters:
@@ -78,7 +87,7 @@ Returns
 Nothing.Saves Image of RSI data ain line plot form.
 '''
 
-def getRSIImage(data,symbol,roomID,end_date):
+def getRSIImage(data,symbol,roomID,end_date,period):
     RSI = IntrinsicValue.getRSIList(data,14)
     StockPlot = pd.DataFrame(columns=['RSI', 'Overbought', 'Oversold'])
     StockPlot['RSI'] = RSI
@@ -86,10 +95,13 @@ def getRSIImage(data,symbol,roomID,end_date):
     StockPlot['Oversold'] = 30
     cols = ['RSI','Overbought','Oversold']
     colors = ['black','green','red']
-    StockPlot[cols].plot(color=colors)
+    plot = StockPlot[cols].plot(color=colors,title="RSI")
+    plot.set_xlabel(("Dates" + str(period) + "Months"))
+    plot.set_ylabel("RSI")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png'
+    print(f'Xticks are {plt.xticks()}')
+    print(f'End date is {end_date}')
     plt.savefig(name)
-    plt.clf()
 
 def splitMonths(months):
     if months <= 12:
@@ -123,8 +135,8 @@ def SaveAllImages(symbol,end_date,period,roomID):
     data = stock.history(end=end_date,start=start_date, interval="1D")
     if os.path.isdir("images") is not True:
         os.mkdir("images")
-    getADXImage(data,symbol,roomID,end_date)
-    getMACDImage(data,symbol,roomID,end_date)
-    getRSIImage(data,symbol,roomID,end_date)
-    getStockImage(data,symbol,roomID,end_date)
+    getADXImage(data,symbol,roomID,end_date,period)
+    getMACDImage(data,symbol,roomID,end_date,period)
+    getRSIImage(data,symbol,roomID,end_date,period)
+    getStockImage(data,symbol,roomID,end_date,period)
     plt.close('alls')

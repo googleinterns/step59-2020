@@ -7,11 +7,12 @@ import math
 from pathlib import Path
 from dateutil.relativedelta import relativedelta
 import datetime
+from datetime import date
 from firebase_admin import credentials,firestore
 from random import randrange
 import firebase_admin
 import numpy as np
-
+import yfinance as yf
 
 
 cred = credentials.Certificate("integrity-step-capstone-firebase-adminsdk-6oh0x-842f5d86d9.json")
@@ -21,43 +22,78 @@ firebase_admin.initialize_app(cred,{
 
 db = firestore.client()
 
-def get_download_path():
-    """Returns the default downloads path for linux or windows"""
-    if os.name == 'nt':
-        import winreg
-        sub_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
-        downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
-            location = winreg.QueryValueEx(key, downloads_guid)[0]
-        return location
-    else:
-        return str(os.path.join(Path.home(), "Downloads"))
-path = get_download_path()
-print(path)
-ans = input("Is this your download Path? Type Yes or paste your actual Download Path:")
-if ans.lower() != 'y' and ans.lower() != 'yes':
-    path = ans
-if path[-1]  is '/':
-    path[:-1]
+# def get_download_path():
+#     """Returns the default downloads path for linux or windows"""
+#     if os.name == 'nt':
+#         import winreg
+#         sub_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
+#         downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
+#         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
+#             location = winreg.QueryValueEx(key, downloads_guid)[0]
+#         return location
+#     else:
+#         return str(os.path.join(Path.home(), "Downloads"))
+# path = get_download_path()
+# print(path)
+# ans = input("Is this your download Path? Type Yes or paste your actual Download Path:")
+# if ans.lower() != 'y' and ans.lower() != 'yes':
+#     path = ans
+# if path[-1]  is '/':
+#     path[:-1]
 
-webbrowser.open("https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download")
-time.sleep(3)
-NASDAQ =  pd.read_csv(path  +"/companylist.csv")
-os.remove(path +"/companylist.csv")
-webbrowser.open("https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download")
-time.sleep(3)
-NYSE =  pd.read_csv(path + "/companylist.csv")
-os.remove(path +"/companylist.csv")
+# webbrowser.open("https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download")
+# time.sleep(3)
+NASDAQ =  pd.read_csv("companylistNASDAQ.csv")
+# os.remove(path +"/companylist.csv")
+# webbrowser.open("https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download")
+# time.sleep(3)
+NYSE =  pd.read_csv("companylistNYSE.csv")
+# os.remove(path +"/companylist.csv")
 
 # Merging the NASDAQ and NYSE database
 StockEx = NASDAQ.append(NYSE)
+StockEx = StockEx.dropna(subset=['IPOyear'])
+StockEx = StockEx.drop_duplicates()
+# We want at least 2 years worth of data to work with not including the present year
+# So we always delete data before that.
+IPOCutoff = datetime.date.today() - relativedelta(years=3)
+StockEx =  StockEx[StockEx.IPOyear <= IPOCutoff.year]
+num = 0
+size = len(StockEx.index)
+for (index,stock) in StockEx.iterrows(): 
+        num+=1
+        symb = stock.Symbol
+        IPO  = int(stock.IPOyear)
+        data  = yf.Ticker(symb)
+        end_year = date.today().year
+        end_date = datetime.datetime(end_year, 1, 1)
+        start_date = datetime.datetime(IPO+1,1,1)
+        str_end = end_date - relativedelta(days=1)
+        hist = pd.DataFrame()
+        try:
+            hist = data.history(start = start_date,end=end_date)
+        except:
+            print("An exception occurred.")
+        if hist.empty:
+            print(f"No data for this Ticker {symb}. \n Will be deleted")
+            try:
+              StockEx = StockEx.drop(index)
+            except KeyError:
+              print("An exception occurred")
+        else:
+            delta  = hist.head(1).index.tolist()[0].to_pydatetime() -start_date
+            if delta.days > 3 or str(hist.tail(1).index.tolist()[0]) != str(str_end):
+                print(f"Symbol {symb} will be deleted")
+                StockEx = StockEx.drop(index)
+            else:
+                print(f"Symbol {symb} will not be deleted")
+        print(f'Current : {num}/{size}')
 
 Industry =  StockEx['industry'].drop_duplicates().reset_index(drop=True)
 Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True)
 
 Stock = StockEx.drop_duplicates()
 # If the IPO year is N/A it means it was established earlier than 1972.
-Stock['IPOyear'].fillna(1972)
 #Market Cap Code
 '''
 This is a little more complicated than the Industry and Sector versions
@@ -102,10 +138,6 @@ MarketCapDictL = {}
 for (key,value) in MarketCapD.items():
     MarketCapDictL[key] = range(value)
 
-# We want at least 2 years worth of data to work with not including the present year
-# So we always delete data before that.
-IPOCutoff = datetime.date.today() - relativedelta(years=3)
-Stock =  Stock[Stock.IPOyear <= IPOCutoff.year]
 StockD =  Stock.reset_index(drop=True).to_dict(orient='index')
 
 StockD = {str(k):v for (k,v) in StockD.items()}

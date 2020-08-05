@@ -102,6 +102,10 @@ export const initDates = async (symbols, Rounds) => {
 
     // No more than 7 rounds(Periods are measured in months)
     let min_window_size = 3;
+    if(IPOyearMax < 2000)
+    {
+      IPOyearMax = 2000 // Just to make sure there aren't any issue
+    }
     let yearDiff = year - (IPOyearMax + 1);
     let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
     let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size)) + min_window_size);
@@ -128,30 +132,38 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   formData.append('end-date',JSON.stringify(endDates));
   var token =  localStorage.getItem('Token');
   try{
-      let response = await fetch("/get_prices", {
+      let response = await fetch("http://localhost:8080/get_prices", {
         method: 'POST',
         body: formData,
         //Comment this line back in when you want to deploy , and get rid of localhost
-        headers: {
-          Authorization: ("Bearer " + token)
-        },
+        // headers: {
+        //   Authorization: ("Bearer " + token)
+        // },
       },100000)
       console.log(response);
+      var event = document.createEvent("Event");
+      event.initEvent("storage", true, true);
+      localStorage.setItem('Prices', 'Received');
+      window.dispatchEvent(event);
   }
   catch(err) {
       console.log("Error is " +  err)
   }
   formData.append('periodLen',periodLen)
   try{
-      let response  = await fetch('/get_stock_image', {
+      let response  = await fetch('http://localhost:8080/get_stock_image', {
           method: 'POST',
           body: formData,
           //Comment this line back in when you want to deploy , and get rid of localhost
-          headers: {
-            Authorization:("Bearer " + token)
-          }
+          // headers: {
+          //   Authorization:("Bearer " + token)
+          // }
       },100000)
       console.log(response);
+      var event = document.createEvent("Event");
+      event.initEvent("storage", true, true);
+      localStorage.setItem('Images', 'Received');
+      window.dispatchEvent(event);
   }
   catch(error){
       console.log("Error is " +  error)
@@ -172,13 +184,13 @@ export const initSymbols = async(industry,Sector,MarketCap,NumOfSymbols) =>{
       formData.append('NumOfSymbols',NumOfSymbols);
       var token =  localStorage.getItem('Token');
       try{
-          let response = await fetch('/get_symbols ', {
+          let response = await fetch('http://localhost:8080/get_symbols ', {
               method: 'POST',
               body: formData,
               //Comment this line back in when you want to deploy , and get rid of localhost
-              headers: {
-                Authorization: (' Bearer ' + token)
-              }
+              // headers: {
+              //   Authorization: (' Bearer ' + token)
+              // }
           },100000)
           let symbolJson = await response.json();
           if (symbolJson.hasOwnProperty("Error")){
