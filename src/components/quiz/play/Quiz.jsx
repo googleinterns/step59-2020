@@ -172,7 +172,7 @@ class Quiz extends Component {
                             <div style={styles.box}>
                                 <p>Selected symbol: Symbol {curSymbol}</p>
                                 <p>You hold {curShares[curSymbol]} shares.</p>
-                                <p>The price is currently ${prices[curSymbol]}.</p>
+                                <p>The price is currently ${prices[curSymbol].toFixed(2)}.</p>
                             </div>
 
                             <div>
