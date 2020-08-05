@@ -248,9 +248,7 @@ export const initSymbols = async(industry,Sector,MarketCap,NumOfSymbols) =>{
 
       let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
       let numOfStocks = StockInfo.data().NumOfStocks - 1;
-      console.log("NumOfSymbols is " + NumOfSymbols + "NumOfStocks is " + numOfStocks);
       let cutoff = Math.floor((Math.random()  * (numOfStocks - NumOfSymbols))+NumOfSymbols);
-      console.log("cutoff is" + cutoff);
       let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("RandomPos",">=", cutoff)
           .orderBy("RandomPos").limit(NumOfSymbols).get()
