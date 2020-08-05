@@ -31,8 +31,6 @@ def getStockImage(data,symbol,roomID,end_date):
     plot.set_xlabel("Dates (YYYY-MM-DD)")
     plot.set_ylabel("Stock")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png'
-    print(f'End date is {end_date}')
-    print(f'Xticks are {plt.xticks()}')
     plt.savefig(name)
 
 '''
@@ -52,8 +50,6 @@ def getMACDImage(data,symbol,roomID,end_date):
     plot.set_xlabel("Dates (YYYY-MM-DD")
     plot.set_ylabel("MACD")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' MACD Stock.png'
-    print(f'Xticks are {plt.xticks()}')
-    print(f'End date is {end_date}')
     plt.savefig(name)
 
 '''
@@ -73,8 +69,6 @@ def getADXImage(data,symbol,roomID,end_date):
     plot.set_xlabel("Dates (YYYY-MM-DD)")
     plot.set_ylabel("ADX")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date +' ADX Stock.png'
-    print(f'Xticks are {plt.xticks()}')
-    print(f'End date is {end_date}')
     plt.savefig(name)
 
 '''
@@ -99,8 +93,6 @@ def getRSIImage(data,symbol,roomID,end_date):
     plot.set_xlabel("Dates (YYYY-MM-DD)")
     plot.set_ylabel("RSI")
     name = 'images/' + symbol + ' ' + roomID + ' ' +end_date + ' RSI Stock.png'
-    print(f'Xticks are {plt.xticks()}')
-    print(f'End date is {end_date}')
     plt.savefig(name)
 
 def splitMonths(months):
