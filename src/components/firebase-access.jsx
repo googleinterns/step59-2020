@@ -210,7 +210,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
           .where("IndustryPos","<=", cutoff)
           .orderBy("IndustryPos").limit(numOfSymbols).get();
 
-      industries.forEach(function(doc){
+      industries.forEach(function(doc) {
           symbols.push(doc.data().Symbol);
       })
   }
@@ -223,7 +223,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
           .where("MarketCapPos","<=", cutoff)
           .orderBy("MarketCapPos").limit(numOfSymbols).get();
 
-      stocks.forEach(function(doc){
+      stocks.forEach(function(doc) {
           symbols.push(doc.data().Symbol);
       })
   }
@@ -237,7 +237,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
           .where("SectorPos","<=", cutoff)
           .orderBy("SectorPos").limit(numOfSymbols).get();
 
-      sectors.forEach(function(doc){
+      sectors.forEach(function(doc) {
           symbols.push(doc.data().Symbol);
       })
 
@@ -251,7 +251,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
           .where("RandomPos",">=", cutoff)
           .orderBy("RandomPos").limit(numOfSymbols).get()
 
-      Stocks.forEach(function(Stock){
+      Stocks.forEach(function(Stock) {
           symbols.push(Stock.data().Symbol);
       })
 
