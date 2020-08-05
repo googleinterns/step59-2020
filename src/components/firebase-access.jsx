@@ -284,7 +284,7 @@ export const setUpRoom = (symbolsL,Rounds,password,startingMoney = 10000) => {
       starting_money: startingMoney,
   });
   const roomID = roomRef.id;
-  initDates(symbolsL,Rounds).then((datesD)=> {
+  initDates(symbolsL,Rounds).then((datesD) => {
       roomRef.update({
           symbols: symbolsL,
           dates: datesD["dates"],
