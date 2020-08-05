@@ -203,8 +203,8 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
   else if(industry !== null) {
 
       let industryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
-      let numOfIndustries= industryInfo.data().Industry[industry];
-      let cutoff = Math.floor((Math.random()  * (numOfIndustries - numOfSymbols))+numOfSymbols);
+      let numOfIndustries = industryInfo.data().Industry[industry];
+      let cutoff = Math.floor((Math.random() * (numOfIndustries - numOfSymbols)) + numOfSymbols);
       let industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("Industry","==",industry)
           .where("IndustryPos","<=", cutoff)
@@ -216,8 +216,8 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
   }
   else if(marketCap !== null) {
       let marketCapInfo = await db.collection("Ticker-Info").doc("Market-Cap").get();
-      let numStocks= marketCapInfo.data().MarketCap[marketCap];
-      let cutoff = Math.floor((Math.random()  * (numStocks - numOfSymbols))+numOfSymbols);
+      let numStocks = marketCapInfo.data().MarketCap[marketCap];
+      let cutoff = Math.floor((Math.random() * (numStocks - numOfSymbols)) + numOfSymbols);
       let stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("MarketCapSize","==",marketCap)
           .where("MarketCapPos","<=", cutoff)
@@ -230,8 +230,8 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
   else if(sector !== null) {
 
       let sectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
-      let numOfSectors= sectorInfo.data().Sector[sector];
-      let cutoff = Math.floor((Math.random()  * (numOfSectors - numOfSymbols))+numOfSymbols);
+      let numOfSectors = sectorInfo.data().Sector[sector];
+      let cutoff = Math.floor((Math.random() * (numOfSectors - numOfSymbols)) + numOfSymbols);
       let sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("Sector","==",sector)
           .where("SectorPos","<=", cutoff)
@@ -246,7 +246,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
 
       let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
       let numOfStocks = StockInfo.data().NumOfStocks - 1;
-      let cutoff = Math.floor((Math.random()  * (numOfStocks - numOfSymbols))+numOfSymbols);
+      let cutoff = Math.floor((Math.random() * (numOfStocks - numOfSymbols)) + numOfSymbols);
       let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
           .where("RandomPos",">=", cutoff)
           .orderBy("RandomPos").limit(numOfSymbols).get()
@@ -463,7 +463,7 @@ function compDoc(a, b){
 }
 
 export const getIndustries = async (db) => {
-  let Industries = await db.collection("Ticker-Info").doc("Indust").get();
+  let Industries = await db.collection("Ticker-Info").doc("Industry").get();
   let IndustryData =  Industries.data().Industry;
   let IndustryList = [];
   for(const Industry in IndustryData) {
