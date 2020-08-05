@@ -6,8 +6,6 @@ import os
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
-# Uncomment this when we start using earnings
-# from yahoo_earnings_calendar import YahooEarningsCalendar
 '''
 We're using yfinance for this, because Finnhub does not offer dividends for free.
 Params: Symbol(String)
@@ -27,10 +25,9 @@ def getLatestDividend(symbol):
    value *=4 # Its an annual dividend
    return value
 
-#TODO: Make get earnings calendar so we can add alerts for the game
-# def getEarningsDate()
+
 '''
-Paramaters:
+Parameters:
 Data-A pandas dataframe of the Closing data of a stock
 Time-window-Default:14(Period of time used for calculation)
 
