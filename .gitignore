@@ -6,3 +6,4 @@ build/
 node_modules
 firestore-debug.log
 package-lock.json
+stock_backend/__pycache__/

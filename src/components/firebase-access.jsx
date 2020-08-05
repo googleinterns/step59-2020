@@ -162,7 +162,7 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
 }
 export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
   let symbols = [];
-  if(atLeastTwo(industry,sector,marketCap)){
+  if(atLeastTwo(industry,sector,marketCap)) {
       //In the case where a person wants to query using multiple features it may return a larger request,
       //so we send it to the backend
       let formData = new FormData();
@@ -200,7 +200,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
   }
 
   // All of the rest of the values use a search by Xpos to make the query as small as possible(O(numOfSymbols))
-  else if(industry !== null){
+  else if(industry !== null) {
 
       let industryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
       let numOfIndustries= industryInfo.data().Industry[industry];
@@ -214,7 +214,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
           symbols.push(doc.data().Symbol);
       })
   }
-  else if(marketCap !== null){
+  else if(marketCap !== null) {
       let marketCapInfo = await db.collection("Ticker-Info").doc("Market-Cap").get();
       let numStocks= marketCapInfo.data().MarketCap[marketCap];
       let cutoff = Math.floor((Math.random()  * (numStocks - numOfSymbols))+numOfSymbols);
@@ -227,7 +227,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
           symbols.push(doc.data().Symbol);
       })
   }
-  else if(sector !== null){
+  else if(sector !== null) {
 
       let sectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
       let numOfSectors= sectorInfo.data().Sector[sector];
