@@ -179,6 +179,29 @@ describe("test advanceDay", () => {
   }).timeout(0);
 });
 
+describe("test add user", () => {
+  it("check correct variables are set", async () => {
+    const mockUID = await fireaccess.addUser(ROOMID, 'mock-2');
+
+    // verify info
+    const uDoc = await db.collection(ROOMS).doc(ROOMID).collection(USERS)
+      .doc(mockUID).get();
+
+    assert.exists(uDoc, "addUser did not add to db");
+    const uData = uDoc.data();
+
+    // check game level info
+    assert.equal('mock-2', uData.nickname);
+    assert.equal(STARTINGMONEY, uData.net_worth);
+    assert.deepEqual([0], uData.curShares);
+
+    const investCol = await db.collection(ROOMS).doc(ROOMID).collection(USERS)
+      .doc(mockUID).collection(INVESTMENTS).get();
+
+    assert.exists(investCol, "addUser did not make an investment collection");
+  }).timeout(0);
+});
+
 // TODO: test getLeaders
 
 /* ********* Tests involving HTTP requests ********* */
