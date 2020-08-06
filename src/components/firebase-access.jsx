@@ -131,18 +131,26 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   formData.append('end-date',JSON.stringify(endDates));
   var token =  localStorage.getItem('Token');
   try{
-      let response = await fetch("http://localhost:8080/get_prices", {
+      let response = await fetch("/get_prices", {
         method: 'POST',
         body: formData,
-        //Comment this line back in when you want to deploy , and get rid of localhost
-        // headers: {
-        //   Authorization: ("Bearer " + token)
-        // },
+        //Comment this line back out when you want to run on localhost and add localhost, and comment out headers
+        headers: {
+          Authorization: ("Bearer " + token)
+        },
       },100000)
       console.log(response);
       var event = document.createEvent("Event");
       event.initEvent("storage", true, true);
-      localStorage.setItem('Prices', 'Received');
+      if(response.status == 200) {
+        localStorage.setItem('Prices', 'Received');
+      }
+      else if(response.status == 401) {
+        localStorage.setItem('Prices', 'Unauthenticated');
+      }
+      else if(response.status == 500) {
+        localStorage.setItem('Prices', 'Error');
+      }
       window.dispatchEvent(event);
   }
   catch(err) {
@@ -150,18 +158,25 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   }
   formData.append('periodLen',periodLen)
   try{
-      let response  = await fetch('http://localhost:8080/get_stock_image', {
+      let response  = await fetch('/get_stock_image', {
           method: 'POST',
           body: formData,
-          //Comment this line back in when you want to deploy , and get rid of localhost
-          // headers: {
-          //   Authorization:("Bearer " + token)
-          // }
+          //Comment this line back out when you want to run on localhost and add localhost, and comment out headers
+          headers: {
+            Authorization:("Bearer " + token)
+          }
       },100000)
-      console.log(response);
       var event = document.createEvent("Event");
       event.initEvent("storage", true, true);
-      localStorage.setItem('Images', 'Received');
+      if(response.status == 200) {
+        localStorage.setItem('Images', 'Received');
+      }
+      else if(response.status == 401) {
+        localStorage.setItem('Images', 'Unauthenticated');
+      }
+      else if(response.status == 500) {
+        localStorage.setItem('Images', 'Error');
+      }
       window.dispatchEvent(event);
   }
   catch(error){
@@ -186,13 +201,13 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
       formData.append('NumOfSymbols',numOfSymbols);
       var token =  localStorage.getItem('Token');
       try{
-          let response = await fetch('http://localhost:8080/get_symbols ', {
+          let response = await fetch('/get_symbols ', {
               method: 'POST',
               body: formData,
-              //Comment this line back in when you want to deploy , and get rid of localhost
-              // headers: {
-              //   Authorization: (' Bearer ' + token)
-              // }
+              //Comment this line back out when you want to run on localhost and add localhost, and comment out headers
+              headers: {
+                Authorization: (' Bearer ' + token)
+              }
           },100000)
           let symbolJson = await response.json();
           if (symbolJson.hasOwnProperty("Error")){

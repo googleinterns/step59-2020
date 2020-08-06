@@ -40,8 +40,8 @@ class Host extends Component {
             authenticated: 'no',
             listening: 'no',
             users: [],
-            images: null,
-            prices: null,
+            images: 'N/A',
+            prices: 'N/A',
             leaders: null,
         }
         this.userExists = this.userExists.bind(this);
@@ -58,8 +58,14 @@ class Host extends Component {
     componentDidMount() {
         const {roomId} = this.state;
         window.addEventListener("storage", e => {
-            let prices = localStorage.getItem('Prices');
-            let images = localStorage.getItem('images');
+            let prices = localStorage.getItem('Prices') ? localStorage.getItem('Prices') : 'N/A';
+            let images = localStorage.getItem('Images') ? localStorage.getItem('Images') : 'N/A' ;
+            if(images === 'Unauthenticated') {
+                alert("Only google employees are allowed to host currently. If you are a google employee and receiving this message. Please resign in");
+            }
+            else if(images === 'Error') {
+                alert("Error Occured please try again.")
+            }
             this.setState({prices: prices});
             this.setState({images: images});
         });
@@ -185,7 +191,7 @@ class Host extends Component {
     }
 
     render() {
-        const {roomId, password, phase, authenticated, users, questionNum} = this.state;
+        const {roomId, password, phase, authenticated, users,images, questionNum} = this.state;
         const gameFunctions = {
             update: this.updateGame,
             restart: this.restartGame,
@@ -207,7 +213,12 @@ class Host extends Component {
                             <TextField label="Password" type="password" name="password" value={password}
                                        onChange={this.handleChange('password')}/>
                         </FormControl>
+                        { images === 'Received' &&
                         <Button  style={styles.buttonStyle} onClick={() => this.joinGame()} variant="contained">Host</Button>
+                        }
+                        {images === 'N/A' &&
+                        < Button  variant="contained" style={styles.disabledButtonStyle} disabled> Host</Button>
+                        }
                         </div>
                     </div>
                 </body>

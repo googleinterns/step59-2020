@@ -22,33 +22,9 @@ firebase_admin.initialize_app(cred,{
 
 db = firestore.client()
 
-# def get_download_path():
-#     """Returns the default downloads path for linux or windows"""
-#     if os.name == 'nt':
-#         import winreg
-#         sub_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
-#         downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
-#         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
-#             location = winreg.QueryValueEx(key, downloads_guid)[0]
-#         return location
-#     else:
-#         return str(os.path.join(Path.home(), "Downloads"))
-# path = get_download_path()
-# print(path)
-# ans = input("Is this your download Path? Type Yes or paste your actual Download Path:")
-# if ans.lower() != 'y' and ans.lower() != 'yes':
-#     path = ans
-# if path[-1]  is '/':
-#     path[:-1]
 
-# webbrowser.open("https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download")
-# time.sleep(3)
 NASDAQ =  pd.read_csv("companylistNASDAQ.csv")
-# os.remove(path +"/companylist.csv")
-# webbrowser.open("https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nyse&render=download")
-# time.sleep(3)
 NYSE =  pd.read_csv("companylistNYSE.csv")
-# os.remove(path +"/companylist.csv")
 
 # Merging the NASDAQ and NYSE database
 StockEx = NASDAQ.append(NYSE)
