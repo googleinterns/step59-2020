@@ -37,33 +37,33 @@ StockEx =  StockEx[StockEx.IPOyear <= IPOCutoff.year]
 num = 0
 size = len(StockEx.index)
 for (index,stock) in StockEx.iterrows(): 
-        num+=1
-        symb = stock.Symbol
-        IPO  = int(stock.IPOyear)
-        data  = yf.Ticker(symb)
-        end_year = date.today().year
-        end_date = datetime.datetime(end_year, 1, 1)
-        start_date = datetime.datetime(IPO+1,1,1)
-        str_end = end_date - relativedelta(days=1)
-        hist = pd.DataFrame()
+    num+=1
+    symb = stock.Symbol
+    IPO  = int(stock.IPOyear)
+    data  = yf.Ticker(symb)
+    end_year = date.today().year
+    end_date = datetime.datetime(end_year, 1, 1)
+    start_date = datetime.datetime(IPO+1,1,1)
+    str_end = end_date - relativedelta(days=1)
+    hist = pd.DataFrame()
+    try:
+        hist = data.history(start = start_date,end=end_date)
+    except:
+        print("An exception occurred.")
+    if hist.empty:
+        print(f"No data for this Ticker {symb}. \n Will be deleted")
         try:
-            hist = data.history(start = start_date,end=end_date)
-        except:
-            print("An exception occurred.")
-        if hist.empty:
-            print(f"No data for this Ticker {symb}. \n Will be deleted")
-            try:
-              StockEx = StockEx.drop(index)
-            except KeyError:
-              print("An exception occurred")
+          StockEx = StockEx.drop(index)
+        except KeyError:
+          print("An exception occurred")
+    else:
+        delta  = hist.head(1).index.tolist()[0].to_pydatetime() -start_date
+        if delta.days > 3 or str(hist.tail(1).index.tolist()[0]) != str(str_end):
+            print(f"Symbol {symb} will be deleted")
+            StockEx = StockEx.drop(index)
         else:
-            delta  = hist.head(1).index.tolist()[0].to_pydatetime() -start_date
-            if delta.days > 3 or str(hist.tail(1).index.tolist()[0]) != str(str_end):
-                print(f"Symbol {symb} will be deleted")
-                StockEx = StockEx.drop(index)
-            else:
-                print(f"Symbol {symb} will not be deleted")
-        print(f'Current : {num}/{size}')
+            print(f"Symbol {symb} will not be deleted")
+    print(f'Current : {num}/{size}')
 
 Industry =  StockEx['industry'].drop_duplicates().reset_index(drop=True)
 Sector = StockEx['Sector'].drop_duplicates().reset_index(drop=True)
