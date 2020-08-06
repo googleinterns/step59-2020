@@ -188,7 +188,7 @@ class Play extends Component {
                     <ol id="user-list">
                         {leaders.map(user => (
                             <li key={user.id}><b>{user.nickname}</b>
-                            <p>Net worth: ${user.net_worth}</p></li>
+                            <p>Net worth: ${user.net_worth.toFixed(2)}</p></li>
                         ))
                         }
                     </ol>
