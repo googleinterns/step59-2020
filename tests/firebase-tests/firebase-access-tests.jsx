@@ -232,7 +232,7 @@ describe("test getLeaders", () => {
 const PERIODLEN = 1;
 const ENDDATE = DATES[1];
 const PRICES = 'Prices';
-const IMAGES = 'Images';
+const IMAGES = 'images';
 
 /* make the stub write mock data to database */
 const createQuizStub = (initializeQuizStub) => {
@@ -240,14 +240,16 @@ const createQuizStub = (initializeQuizStub) => {
 
   initializeQuizStub.callsFake(async () => {
 
+    const symbolIndex = 0;
+    symbolRef = db.collection(ROOMS).doc(ROOMID).collection(symbolIndex.toString());
+
     // set prices data
     symbolRef.doc(PRICES).set({
       prices: SYMBOL_PRICES
     });
 
-    // set image urls
-    symbolRef.doc(IMAGES).set({
-      ADXpublic_image_Url: {
+    const URLS = {
+      ADXpublic_image_url: {
         mock0: MOCKURL,
         mock1: MOCKURL
       },
@@ -262,8 +264,11 @@ const createQuizStub = (initializeQuizStub) => {
       Stockpublic_image_url: {
         mock0: MOCKURL,
         mock1: MOCKURL
-      },
-    });
+      }
+    };
+
+    // set image urls
+    symbolRef.doc(IMAGES).set(URLS);
   });
 }
 
@@ -281,7 +286,6 @@ const createDatesStub = (initDatesStub) => {
 describe("test setUpRoom", () => {
   let initializeQuizStub;
   let initDatesStub;
-  const newRoomID = null;
 
   beforeEach(() => {
     initializeQuizStub = sinon.stub(fireaccess, "initializeQuiz");
@@ -307,5 +311,17 @@ describe("test setUpRoom", () => {
     assert.deepEqual(res, DATESDICT);
   }).timeout(0);
 
-  // TODO: test getChartUrls, getCharts
+  it("test getChartUrls", async () => {
+    const symbolIndex = 0;
+    const urls = await fireaccess.getChartUrls(ROOMID, symbolIndex.toString(), DAYINDEX);
+    assert.exists(urls, "getChartUrls didn't return anything");
+    assert.equal(4, urls.length);
+
+    // confirm all of them contain 'mock-url' as url
+    urls.forEach((curURL) => {
+      assert.deepEqual('mock-url', curURL);
+    });
+  }).timeout(0);
+
+  // TODO: test getCharts
 });
