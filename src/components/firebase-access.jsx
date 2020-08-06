@@ -130,7 +130,7 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
   formData.append('RoomId',roomId);
   formData.append('end-date',JSON.stringify(endDates));
   var token =  localStorage.getItem('Token');
-  try{
+  try {
       let response = await fetch("/get_prices", {
         method: 'POST',
         body: formData,
@@ -157,7 +157,7 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
       console.log("Error is " +  err)
   }
   formData.append('periodLen',periodLen)
-  try{
+  try {
       let response  = await fetch('/get_stock_image', {
           method: 'POST',
           body: formData,
@@ -200,7 +200,7 @@ export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
       }
       formData.append('NumOfSymbols',numOfSymbols);
       var token =  localStorage.getItem('Token');
-      try{
+      try {
           let response = await fetch('/get_symbols ', {
               method: 'POST',
               body: formData,
