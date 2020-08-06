@@ -179,13 +179,15 @@ describe("test advanceDay", () => {
   }).timeout(0);
 });
 
+var USER2ID;
+
 describe("test add user", () => {
   it("check correct variables are set", async () => {
-    const mockUID = await fireaccess.addUser(ROOMID, 'mock-2');
+    USER2ID = await fireaccess.addUser(ROOMID, 'mock-2');
 
     // verify info
     const uDoc = await db.collection(ROOMS).doc(ROOMID).collection(USERS)
-      .doc(mockUID).get();
+      .doc(USER2ID).get();
 
     assert.exists(uDoc, "addUser did not add to db");
     const uData = uDoc.data();
@@ -196,13 +198,31 @@ describe("test add user", () => {
     assert.deepEqual([0], uData.curShares);
 
     const investCol = await db.collection(ROOMS).doc(ROOMID).collection(USERS)
-      .doc(mockUID).collection(INVESTMENTS).get();
+      .doc(USER2ID).collection(INVESTMENTS).get();
 
     assert.exists(investCol, "addUser did not make an investment collection");
   }).timeout(0);
 });
 
-// TODO: test getLeaders
+describe("test getLeaders", () => {
+  it("confirm order is correct", async () => {
+    const leaders = await fireaccess.getLeaders(ROOMID);
+
+    // USERID should be first, then mock-2
+    const u1Doc = await db.collection(ROOMS).doc(ROOMID).collection(USERS)
+      .doc(USERID).get();
+    const u1Data = u1Doc.data();
+    assert.exists(u1Data, "USERID data is undefined");
+
+    const u2Doc = await db.collection(ROOMS).doc(ROOMID).collection(USERS)
+      .doc(USER2ID).get();
+    const u2Data = u2Doc.data();
+    assert.exists(u2Data, "USER2ID data is undefined");
+
+    assert.deepEqual(leaders[0], u1Data);
+    assert.deepEqual(leaders[1], u2Data);
+  })
+})
 
 /* ********* Tests involving HTTP requests ********* */
 
