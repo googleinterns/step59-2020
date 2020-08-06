@@ -322,6 +322,4 @@ describe("test setUpRoom", () => {
       assert.deepEqual('mock-url', curURL);
     });
   }).timeout(0);
-
-  // TODO: test getCharts
 });
