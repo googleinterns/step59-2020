@@ -2,7 +2,7 @@ import firebase_admin
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from firebase_admin import credentials,firestore,storage
-from Plot import SaveAllImages
+from Plot import SaveAllImages,deleteAllImages
 from dateutil.relativedelta import relativedelta
 import requests
 import IntrinsicValue
@@ -21,12 +21,13 @@ firebase_admin.initialize_app(cred,{
 firebase_request_adapter = requests.Request()
 
 app = Flask(__name__)
-app.secret_key = "" # Secret key can't be on github
+app.secret_key = ""
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['IMAGES'] = 'images/'
-CORS(app)
 db = firestore.client()
 bucket = storage.bucket()
+
+CORS(app)
 
 '''
 Params:
@@ -38,7 +39,7 @@ end-date- The last date of the period in format 2017-08-10 00:00:00
 Returns:
 A success code and it uploads the image to firebase cloud storage.
 '''
-@app.route('/get-stock-image',methods=['POST'])
+@app.route('/get_stock_image',methods=['POST'])
 def get_stock_image():
     symbols = json.loads(request.form['symbol'],encoding="utf-8")
     period = request.form['periodLen']
@@ -55,7 +56,7 @@ def get_stock_image():
 
             expiration_date = datetime.date.today()+ relativedelta(days=2)
             exp_date_Time = datetime.datetime(
-                year=expiration_date.year, 
+                year=expiration_date.year,
                 month=expiration_date.month,
                 day=expiration_date.day,
             )
@@ -79,7 +80,7 @@ def get_stock_image():
             Stockblob.upload_from_filename('images/' + symbol + ' ' + roomID + ' ' +end_date + ' Stock.png')
             StockDict[end_date] = Stockblob.generate_signed_url(expiration=exp_date_Time,
                                         version='v4')
-    
+
             img = {
                     'RSIpublic_image_url':RSIDict,
                     'MACDpublic_image_url':MACDDict,
@@ -87,21 +88,33 @@ def get_stock_image():
                     'Stockpublic_image_url':StockDict,
             }
             db.collection('Rooms').document(roomID).collection(symbol).document('images').set(img)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+            deleteAllImages('images/')
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
-@app.route('/get-symbols',methods=['POST'])
+@app.route('/get_symbols',methods=['POST'])
 def get_symbols():
-    Industry = request.form['Industry']
-    Sector = request.form['Sector']
-    Num_of_Symbols = request.form['NumOfSymbols']
-
-    IndSect = db.collection("Ticker-Info").doc("Stock").collection("Stocks").where("Industry","==",Industry) \
-    .where("Sector","==", Sector).stream()
+    Num_of_Symbols = int(request.form['NumOfSymbols'])
+    StocksQuery = db.collection("Ticker-Info").document("Stock").collection("Stocks")
+    if 'Industry' in request.form:
+        print(request.form['Industry'])
+        StocksQuery = StocksQuery.where("Industry","==",request.form['Industry'])
+    if 'Sector'  in request.form:
+        print(request.form['Sector'])
+        StocksQuery = StocksQuery.where("Sector","==",request.form['Sector'])
+    if 'MarketCap' in request.form:
+        print(request.form['MarketCap'])
+        StocksQuery = StocksQuery.where("MarketCapSize","==",request.form['MarketCap'])
     num_of_stocks = 0
     symbols = []
-    for stock in IndSect:
+    for stock in StocksQuery.stream():
         num_of_stocks+=1
-        symbols.append(stock.to_dict()['Stock Data']['Symbol'])
+        symbols.append(stock.to_dict()['Symbol'])
 
     responseD ={}
     if num_of_stocks == 0:
@@ -116,14 +129,14 @@ def get_symbols():
         responseD = {
             "symbols": random.choices(symbols,k=Num_of_Symbols)
         }
-
     response = app.response_class(
         response=json.dumps(responseD),
         status=200,
         mimetype='application/json'
     )
+    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
-    
+
 
 '''
 Params:
@@ -135,7 +148,7 @@ end-date- The last date of the period in format 2017-08-10 00:00:00
 Returns:
 A success code and it uploads the indicators to cloud storage
 '''
-@app.route('/get-technical-indicators',methods=['POST'])
+@app.route('/get_technical_indicators',methods=['POST'])
 def tech_indic():
     symbol = request.form['symbol']
     period = request.form['periodLen']
@@ -144,19 +157,25 @@ def tech_indic():
     TechI = IntrinsicValue.getAllTechnicalIndicators(symbol,end_date,period)
     TechDict = TechI.to_dict(orient='index')
     db.collection('Rooms').document(roomID).collection(symbol).document('technical-indicators').set(TechDict)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 '''
 Params:
 Symbol-A string of the stock symbol
 roomId
-• The id of the room 
+• The id of the room
 End-date
 Ex:2006-06-15 00:00:00
 Response:
 It creates a json file of the corresponding data, or if the limit's been reached it will queue until the request gets data
 '''
-@app.route('/get-prices',methods=['POST'])
+@app.route('/get_prices',methods=['POST'])
 def time_series():
     symbols = json.loads(request.form['symbol'],encoding="utf-8")
     roomID = request.form['RoomId']
@@ -172,8 +191,14 @@ def time_series():
             'prices': prices
         }
         db.collection('Rooms').document(roomID).collection(symbol).document('Prices').set(price)
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
-     
+    response = app.response_class(
+        response=json.dumps({'success':True}),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This

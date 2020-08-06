@@ -6,12 +6,10 @@ import os
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
-# Uncomment this when we start using earnings
-# from yahoo_earnings_calendar import YahooEarningsCalendar 
 '''
 We're using yfinance for this, because Finnhub does not offer dividends for free.
 Params: Symbol(String)
-Returns:If the company is a dividend company it gives the latest dividend yearly, 
+Returns:If the company is a dividend company it gives the latest dividend yearly,
 otherwise, it gives a -1 to tell the function caller it is a non paying dividend company.
 
 '''
@@ -27,15 +25,14 @@ def getLatestDividend(symbol):
    value *=4 # Its an annual dividend
    return value
 
-#TODO: Make get earnings calendar so we can add alerts for the game
-# def getEarningsDate()
+
 '''
-Paramaters: 
-Data-A pandas dataframe of the Closing data of a stock 
+Parameters:
+Data-A pandas dataframe of the Closing data of a stock
 Time-window-Default:14(Period of time used for calculation)
 
 Return
--a Pandas dataframe of the rsi values for the period of the data specified 
+-a Pandas dataframe of the rsi values for the period of the data specified
 with the exception of the last (time_window) days
 Columns:RSI
 
@@ -47,16 +44,16 @@ def getRSIList (data, time_window):
     # this preservers dimensions off diff values
     up_chg = 0 * diff
     down_chg = 0 * diff
-    
+
     # up change is equal to the positive difference, otherwise equal to zero
     up_chg[diff > 0] = diff[ diff>0 ]
-    
+
     # down change is equal to negative deifference, otherwise equal to zero
     down_chg[diff < 0] = diff[ diff < 0 ]
-    
+
     up_chg_avg   = up_chg.ewm(com=time_window-1 , min_periods=time_window).mean()
     down_chg_avg = down_chg.ewm(com=time_window-1 , min_periods=time_window).mean()
-    
+
     rs = abs(up_chg_avg/down_chg_avg)
     rsi = 100 - 100/(1+rs)
 
@@ -66,7 +63,7 @@ def getRSIList (data, time_window):
     return rsi
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe of the High low and closing data of a stock
 
 
@@ -84,7 +81,7 @@ def getADXList(data):
    return data[['pos_directional_indicator','neg_directional_indicator','adx']]
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe  closing data of a stock.
 Days-An integer specifing the type of SMA(Usually 50 or 200)
 
@@ -96,10 +93,10 @@ Colums are [' X Days SMA']
 def getSMAList(data,days):
    SMAList = data.Close.rolling(window=days).mean()
    SMAList.name = str(days) + ' Day SMA'
-   return SMAList  
-   
+   return SMAList
+
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe  closing data of a stock.
 Days-An integer specifing the type of EMA(Usually 10)
 
@@ -114,10 +111,10 @@ def getEMAList(data,days):
    return EMAList
 
 '''
-Paramaters: 
+Paramaters:
 Data-A pandas dataframe  closing data of a stock.
 Return
--a Pandas dataframe of the MACD values for the period of the data specified 
+-a Pandas dataframe of the MACD values for the period of the data specified
 as well as the corresponding signal
 Colums are ['MACD','Signal']
 
@@ -133,13 +130,13 @@ def getMACDList(data):
 
 
 '''
-Paramaters: 
+Paramaters:
 Symbol- A string of the stock symbol
 periodLen- 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
 end-date- The last date of the period in format 2017-08-10 00:00:00
 Return
 -a Pandas dataframe all technical indicators for that time period
-Colums are 
+Colums are
 ['MACD','Signal','10 Day EMA','50 Day SMA','200 Day SMA','adx',
 'pos_directional_indicator','neg_directional_indicator','RSI']
 

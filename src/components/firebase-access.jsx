@@ -1,4 +1,5 @@
 import firebase from "firebase/app";
+import fetch from './fetchWithTimeOut'
 import "firebase/auth";
 import "firebase/firestore";
 import {db, fval} from "../firebase";
@@ -101,6 +102,9 @@ export const initDates = async (symbols, Rounds) => {
 
     // No more than 7 rounds(Periods are measured in months)
     let min_window_size = 3;
+    if(IPOyearMax < 2000) {
+      IPOyearMax = 2000 // Just to make sure there aren't any issue
+    }
     let yearDiff = year - (IPOyearMax + 1);
     let maximum_period = Math.floor(((yearDiff * 12)  - min_window_size) / Rounds);
     let random_period =  Math.floor((Math.random()  * (maximum_period - min_window_size)) + min_window_size);
@@ -121,93 +125,138 @@ export const initDates = async (symbols, Rounds) => {
 }
 
 export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
-    var formData = new FormData();
-    formData.append('symbol',JSON.stringify(symbols));
-    formData.append('RoomId',roomId);
-    formData.append('end-date',JSON.stringify(endDates));
-    try{
-        await fetch('http://localhost:8080/get-prices', {
-            method: 'POST',
-            mode: 'cors',
-            body: formData
-        })
-    }
-    catch(err) {
-        console.log("Error is " +  err)
-    }
-    formData.append('periodLen',periodLen)
-    try{
-        await fetch('http://localhost:8080/get-stock-image', {
-            method: 'POST',
-            mode: 'cors',
-            body: formData
-        })
-    }
-    catch(error){
-        console.log("Error is " +  error)
-    }
+  var formData = new FormData();
+  formData.append('symbol',JSON.stringify(symbols));
+  formData.append('RoomId',roomId);
+  formData.append('end-date',JSON.stringify(endDates));
+  var token =  localStorage.getItem('Token');
+  try {
+      let response = await fetch("/get_prices", {
+        method: 'POST',
+        body: formData,
+        //Comment this line back out when you want to run on localhost and add localhost, and comment out headers
+        headers: {
+          Authorization: ("Bearer " + token)
+        },
+      },100000)
+      console.log(response); // This is here until the next pr gets approved.
+  }
+  catch(err) {
+      console.log("Error is " +  err)
+  }
+  formData.append('periodLen',periodLen)
+  try {
+      let response  = await fetch('/get_stock_image', {
+          method: 'POST',
+          body: formData,
+          //Comment this line back out when you want to run on localhost and add localhost, and comment out headers
+          headers: {
+            Authorization:("Bearer " + token)
+          }
+      },100000)
+      console.log(response); // Same as above
+  }
+  catch(error){
+      console.log("Error is " +  error)
+  }
 }
+export const initSymbols = async(industry,sector,marketCap,numOfSymbols) =>{
+  let symbols = [];
+  if(atLeastTwo(industry,sector,marketCap)) {
+      //In the case where a person wants to query using multiple features it may return a larger request,
+      //so we send it to the backend
+      let formData = new FormData();
+      if(industry) {
+          formData.append('Industry',industry);
+      }
+      if(sector) {
+          formData.append('Sector',sector);
+      }
+      if(marketCap) {
+          formData.append('MarketCap',marketCap);
+      }
+      formData.append('NumOfSymbols',numOfSymbols);
+      var token =  localStorage.getItem('Token');
+      try {
+          let response = await fetch('/get_symbols ', {
+              method: 'POST',
+              body: formData,
+              //Comment this line back out when you want to run on localhost and add localhost, and comment out headers
+              headers: {
+                Authorization: (' Bearer ' + token)
+              }
+          },100000)
+          let symbolJson = await response.json();
+          if (symbolJson.hasOwnProperty("Error")){
+              console.log("No Symbols for your query")
+              return symbols;
+          }
+          symbols = symbolJson['symbols'];
+      }
+      catch(error){
+          console.log("Error with Query: " + error);
+      }
 
-export const initSymbols = async (Industry,Sector,NumOfSymbols) =>{
-    let symbols = []
-    if (Sector !== null && Industry !== null) {
-        let formData = new FormData();
-        formData.append('Industry',Industry);
-        formData.append('Sector',Sector);
-        formData.append('NumOfSymbols',NumOfSymbols);
-        try{
-            let response = await fetch('http://localhost:8080/get-symbols', {
-                method: 'POST',
-                mode: 'cors',
-                body: formData
-            })
-            let symbolJson = await response.json()
-            if (symbolJson.hasOwnProperty("Error")){
-                console.log("No Symbols for your query")
-                return symbols
-            }
-            symbols = symbolJson['symbols']
-        }
-        catch(error){
-            console.log("Error with Query: " + error)
-        }
-    }
-    else if(Industry !== null){
-        let IndustryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
-        let numOfIndustries= IndustryInfo.data().Industry[Industry];
-        let cutoff = Math.floor((Math.random()  * (numOfIndustries - NumOfSymbols))+NumOfSymbols);
-        let Industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-            .where("Industry","==",Industry)
-            .where("IndustryPos","<=", cutoff)
-            .orderBy("IndustryPos").limit(NumOfSymbols).get();
-        Industries.forEach(function(doc){
-            symbols.push(doc.data().Symbol)
-        })
-    }
-    else if(Sector !== null){
-        let SectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
-        let numOfSectors= SectorInfo.data().Sector[Sector];
-        let cutoff = Math.floor((Math.random()  * (numOfSectors - NumOfSymbols))+NumOfSymbols);
-        let Sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-            .where("Sector","==",Sector)
-            .where("SectorPos","<=", cutoff)
-            .orderBy("SectorPos").limit(NumOfSymbols).get();
-        Sectors.forEach(function(doc){
-            symbols.push(doc.data().Symbol)
-        })
-    }
-    else{
-        let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
-        let numOfStocks = StockInfo.data().NumOfStocks - 1;
-        let cutoff = Math.floor((Math.random() * (numOfStocks - NumOfSymbols))+NumOfSymbols);
-        let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
-            .where("RandomPos",">=", cutoff)
-            .orderBy("RandomPos").limit(NumOfSymbols).get();
-        Stocks.forEach(function(Stock){
-            symbols.push(Stock.data().Symbol)
-        })
-    }
-    return symbols
+  }
+
+  // All of the rest of the values use a search by Xpos to make the query as small as possible(O(numOfSymbols))
+  else if(industry !== null) {
+
+      let industryInfo =  await db.collection("Ticker-Info").doc("Industry").get();
+      let numOfIndustries = industryInfo.data().Industry[industry];
+      let cutoff = Math.floor((Math.random() * (numOfIndustries - numOfSymbols)) + numOfSymbols);
+      let industries = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+          .where("Industry","==",industry)
+          .where("IndustryPos","<=", cutoff)
+          .orderBy("IndustryPos").limit(numOfSymbols).get();
+
+      industries.forEach(function(doc) {
+          symbols.push(doc.data().Symbol);
+      })
+  }
+  else if(marketCap !== null) {
+      let marketCapInfo = await db.collection("Ticker-Info").doc("Market-Cap").get();
+      let numStocks = marketCapInfo.data().MarketCap[marketCap];
+      let cutoff = Math.floor((Math.random() * (numStocks - numOfSymbols)) + numOfSymbols);
+      let stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+          .where("MarketCapSize","==",marketCap)
+          .where("MarketCapPos","<=", cutoff)
+          .orderBy("MarketCapPos").limit(numOfSymbols).get();
+
+      stocks.forEach(function(doc) {
+          symbols.push(doc.data().Symbol);
+      })
+  }
+  else if(sector !== null) {
+
+      let sectorInfo =  await db.collection("Ticker-Info").doc("Sector").get();
+      let numOfSectors = sectorInfo.data().Sector[sector];
+      let cutoff = Math.floor((Math.random() * (numOfSectors - numOfSymbols)) + numOfSymbols);
+      let sectors = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+          .where("Sector","==",sector)
+          .where("SectorPos","<=", cutoff)
+          .orderBy("SectorPos").limit(numOfSymbols).get();
+
+      sectors.forEach(function(doc) {
+          symbols.push(doc.data().Symbol);
+      })
+
+  }
+  else{
+
+      let StockInfo =  await db.collection("Ticker-Info").doc("Stock").get();
+      let numOfStocks = StockInfo.data().NumOfStocks - 1;
+      let cutoff = Math.floor((Math.random() * (numOfStocks - numOfSymbols)) + numOfSymbols);
+      let Stocks = await db.collection("Ticker-Info").doc("Stock").collection("Stocks")
+          .where("RandomPos",">=", cutoff)
+          .orderBy("RandomPos").limit(numOfSymbols).get()
+
+      Stocks.forEach(function(Stock) {
+          symbols.push(Stock.data().Symbol);
+      })
+
+  }
+  return symbols;
 }
 
 export const makeInvestment = async (roomID, userID, dayIndex, changeArray) => {
@@ -226,26 +275,23 @@ function randomDate(start, end) {
     return date;
 }
 
-export const setUpRoom = (numOfSymbols,rounds,password,startingMoney = 10000) => {
-
-    const roomRef = db.collection('Rooms').doc();
-    roomRef.set({
-        day_index: 0,
-        phase: 'no-host',
-        password: password,
-        starting_money: startingMoney,
-    });
-    const roomID = roomRef.id;
-    initSymbols(null,null,numOfSymbols).then((symbolsL) => {
-        initDates(symbolsL,rounds).then((datesD)=> {
-            roomRef.update({
-                symbols: symbolsL,
-                dates: datesD["dates"],
-            });
-            initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
-        });
-    });
-    return roomID;
+export const setUpRoom = (symbolsL,Rounds,password,startingMoney = 10000) => {
+  const roomRef = db.collection('Rooms').doc();
+  roomRef.set({
+      day_index: 0,
+      phase: 'no-host',
+      password: password,
+      starting_money: startingMoney,
+  });
+  const roomID = roomRef.id;
+  initDates(symbolsL,Rounds).then((datesD) => {
+      roomRef.update({
+          symbols: symbolsL,
+          dates: datesD["dates"],
+      });
+      initializeQuiz(symbolsL,roomID,datesD["period"],datesD["dates"]);
+  });
+  return roomID;
 }
 
 //TODO: this method can be called many times, which leads to latency due to a lot of awaits. See if can pass userData from other methods

@@ -6,7 +6,6 @@ import Select from 'react-select';
 import NumericInput from 'react-numeric-input';
 import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
-
 import Instructions from "../Instructions";
 import {Text} from 'react-native';
 import * as styles from '../../styles/CreateStyle.jsx';
@@ -32,10 +31,15 @@ class Config extends React.Component {
     }
 
     createRoom = () => {
-        console.log("create room called");
-        const {numSymbols,numRounds} = this.state;
-        var roomID = setUpRoom(numSymbols,numRounds + 1,'');
-        this.props.updatePageType('created',roomID);
+      const Industry = null;
+      const Sector = null;
+      const MarketCaps = null;
+      const {numSymbols,numRounds} = this.state;
+
+      initSymbols(Industry,Sector,MarketCaps,numSymbols).then((symbolsL) => {
+            let roomID = setUpRoom(symbolsL,numRounds,'');
+            this.props.updatePageType('created',roomID);
+      });
     }
 
     toggleInstructions() {
@@ -71,12 +75,10 @@ class Config extends React.Component {
                     <label> Set number of symbols </label>
                     <NumericInput style={styles.numericinput} type='number' name="numSymbols" step={1} value={this.state.numSymbols} min={1} max={7}
                        onChange={this.handleChange.bind(this,'numSymbols')}/>
-             
                     <br/><br/>
 
                     <label> Set number of rounds </label>
-                    <NumericInput type='number' name="numRounds" step={1} value={this.state.numRounds} min={2} max={7}
-                      
+                    <NumericInput type='number' name="numRounds" step={1} value={this.state.numRounds} min={1} max={7}
                        onChange={this.handleChange.bind(this,'numRounds')}/>
 
                     <br/><br/><br/>

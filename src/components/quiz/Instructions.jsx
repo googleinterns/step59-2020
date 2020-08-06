@@ -80,10 +80,43 @@ class Instructions extends Component {
                             </div>
                         }
 
-                        {info === 'ta' &&
-                            <div>
-                                <h1> you are looking at the technical analysis indicators </h1>
-                                <h2> more explanations to be added soon </h2>
+                        {info == 'ta' &&
+                        
+                            <div style={styles.tech_a}>
+                               <h1> you are looking at the technical analysis indicators </h1>
+                                <h2> There are 4 graphs. </h2>
+                                <ul>
+                                  <li><h3>Stock Graph</h3> </li>
+                                  <li>Green Line:A graph of the price.</li>
+                                  <li>Red Line: A 10 day EMA average, 10 Day EMA:Exponential Moving Average is the average of the last 10 days price weighted towards recent data. It is useful for gauging the strength of the trend of a price.  </li>
+                                  <li>May not be showing fully: Yellow: A 50 day SMA. 50  Day moving averagee: The 50 day moving average non weighted. You should look for stocks with prices above their 50 day moving averages. Can be useful in identifying trends</li>
+                                  <li>May not be showing fully: Orange: A 200 day SMA. 200  Day moving averagee: The 200 day moving average non weighted. You should look for stocks with prices above their 50 day moving averages. Can be useful in identifying trends</li>
+                                </ul>
+                                <ul>
+                                  <li><h3>ADX Graph</h3> </li>
+                                  <li>Black Line:The adx value. Used to identify the strength of the trend. </li>
+                                  <li>ADX values less than 25 indicate a weak or absent trend. </li>
+                                  <li> ADX values greater than 25 but lower than 50 indicate a strong trend.</li>
+                                  <li> ADX values greater than 50 but less than 75 indicate a very strong trend.</li>
+                                  <li> ADX values greater than 75 indicate an extremely strong trend</li>
+                                  <li>Green Line: + DMI</li>
+                                  <li>Red Line: -DMI</li>
+                                  <li>When the +DMI is above the -DMI, prices are moving up, and ADX measures the strength of the uptrend. When the -DMI is above the +DMI, prices are moving down, and ADX measures the strength of the downtrend. </li>
+                                </ul>
+                                <ul>
+                                  <li><h3>MACD Graph</h3> </li>
+                                  <li>Green Line:The MACD value. </li>
+                                  <li>Yellow Liine: The Signal line</li>
+                                  <li>MACD triggers technical signals when it crosses above (to buy) or below (to sell) its signal line. </li>
+                                  <li>The speed of crossovers is also taken as a signal of a market is overbought or oversold.</li>
+                                  <li>MACD helps investors understand whether the bullish or bearish movement in the price is strengthening or weakening.</li>
+                                </ul>
+                                <ul>
+                                    <li><h3>RSi Graph </h3> </li>
+                                    <li> Black Line: THe RSI value  </li>
+                                    <li>The Rsi value is used to check if a stock is overbought or oversold. Extended stays with value of the RSI over 70 may indicate it is overextended in buy territory which may indicate a reversal coming soon. </li>
+                                    <li> RSI values under 30 may indicate underbought stocks. Note. Underbought stocks could be readying for a crash or a reversal attempt to buy stocks closer to 70 but not over it,</li>
+                                </ul>
                             </div>
                         }
 
