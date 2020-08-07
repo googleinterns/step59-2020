@@ -159,10 +159,10 @@ class Quiz extends Component {
 
                 <div>
                     <div style={styles.box}>
-                    <p>Hi there, {nickname}!</p>
-                    <p>You are in Room {roomId}.</p>
-                    <p>Your net worth is ${net_worth.toFixed(2)} and you have ${money_left.toFixed(2)} in cash.</p>
-                    <p>Round: {questionNum}</p>
+                    <p data-testid="nicknameText">Hi there, {nickname}!</p>
+                    <p data-testid="roomIDText">You are in Room {roomId}.</p>
+                    <p data-testid="displayUserMoney">Your net worth is ${net_worth.toFixed(2)} and you have ${money_left.toFixed(2)} in cash.</p>
+                    <p data-testid="displayRoundNum">Round: {questionNum}</p>
                     </div>
                     <Select style={styles.dropdown} onChange={this.symbolSelectHandler} options={symbolSelect}/>
                     <br/><br/>
