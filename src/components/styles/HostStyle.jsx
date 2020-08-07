@@ -40,3 +40,14 @@ export const smallFont = {
     fontSize: '18px',
     opacity: '80%',
 }
+export const disabledButtonStyle = {
+    background: 'gray',
+    borderRadius: 3,
+    border: 0,
+    color: 'white',
+    padding: '50px',
+    boxShadow: '0 1px 2px 2px',
+    align: 'center',
+    width: '20rem',
+    margin: '1rem 1rem 1rem 1rem'
+}

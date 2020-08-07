@@ -139,7 +139,19 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
           Authorization: ("Bearer " + token)
         },
       },100000)
-      console.log(response); // This is here until the next pr gets approved.
+      console.log(response);
+      var event = document.createEvent("Event");
+      event.initEvent("storage", true, true);
+      if(response.status == 200) {
+        localStorage.setItem('Prices', 'Received');
+      }
+      else if(response.status == 401) {
+        localStorage.setItem('Prices', 'Unauthenticated');
+      }
+      else if(response.status == 500) {
+        localStorage.setItem('Prices', 'Error');
+      }
+      window.dispatchEvent(event);
   }
   catch(err) {
       console.log("Error is " +  err)
@@ -154,7 +166,18 @@ export const initializeQuiz = async (symbols, roomId, periodLen, endDates) => {
             Authorization:("Bearer " + token)
           }
       },100000)
-      console.log(response); // Same as above
+      var event = document.createEvent("Event");
+      event.initEvent("storage", true, true);
+      if(response.status == 200) {
+        localStorage.setItem('Images', 'Received');
+      }
+      else if(response.status == 401) {
+        localStorage.setItem('Images', 'Unauthenticated');
+      }
+      else if(response.status == 500) {
+        localStorage.setItem('Images', 'Error');
+      }
+      window.dispatchEvent(event);
   }
   catch(error){
       console.log("Error is " +  error)
