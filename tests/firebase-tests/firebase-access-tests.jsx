@@ -77,7 +77,7 @@ setUpMockRoom();
 addMockSymbolData();
 var dbRoundPrices = null;
 
-describe("test getPrices", () => {
+describe("test getPrices is accurate", () => {
   it("check prices is accurate", async () => {
     dbRoundPrices = await fireaccess.getPrices(ROOMID, DAYINDEX);
     assert.isArray(dbRoundPrices, "prices is not an array");
@@ -93,12 +93,12 @@ const verifyHelper = async (changeArray) => {
     changeArray, dbRoundPrices);
 }
 
-describe("test makeInvestment methods", () => {
+describe("test makeInvestment methods are successful", () => {
 
   // represents buying two shares of symbol0
   const CHANGEARRAY = [2];  
 
-  it('check changeCash', async () => {
+  it('check changeCash is accurate', async () => {
     await fireaccess.changeCash(ROOMID, USERID, DAYINDEX, CHANGEARRAY, dbRoundPrices);
 
     // user started with $100 and bought two shares @ $5 each, so
@@ -113,7 +113,7 @@ describe("test makeInvestment methods", () => {
     assert.equal(90, dbMoney);
   }).timeout(0);
 
-  it("check changeShares", async () => {
+  it("check changeShares is accurate", async () => {
     await fireaccess.changeShares(ROOMID, USERID, DAYINDEX, CHANGEARRAY);
 
     // expected: current shares are updated in portfolio
@@ -133,7 +133,7 @@ describe("test makeInvestment methods", () => {
     assert.deepEqual(CHANGEARRAY, roundInvestmentsArray);
   }).timeout(0);
 
-  it("check verifyOk", async () => {
+  it("check verifyOk is accurate", async () => {
 
     assert.isTrue(await verifyHelper([2]), 
       "verifyOk failed - thought an OK trade was bad");
@@ -151,7 +151,7 @@ describe("test makeInvestment methods", () => {
   }).timeout(0);
 });
 
-describe("test advanceDay", () => {
+describe("test advanceDay is accurate", () => {
   
   it("check net_worth is correctly updated", async () => {
       await fireaccess.advanceDay(ROOMID);
@@ -181,7 +181,7 @@ describe("test advanceDay", () => {
 
 var USER2ID;
 
-describe("test add user", () => {
+describe("test add user is successful", () => {
   it("check correct variables are set", async () => {
     USER2ID = await fireaccess.addUser(ROOMID, 'mock-2');
 
@@ -204,7 +204,7 @@ describe("test add user", () => {
   }).timeout(0);
 });
 
-describe("test getLeaders", () => {
+describe("test getLeaders is accurate", () => {
   it("confirm order is correct", async () => {
     const leaders = await fireaccess.getLeaders(ROOMID);
 
@@ -283,7 +283,7 @@ const createDatesStub = (initDatesStub) => {
   })
 }
 
-describe("test setUpRoom", () => {
+describe("test setUpRoom is successful", () => {
   let initializeQuizStub;
   let initDatesStub;
 
@@ -301,17 +301,17 @@ describe("test setUpRoom", () => {
   });
 
   // test methods are stubbed properly
-  it("test initializeQuiz", async () => {
+  it("test initializeQuiz is successful", async () => {
     const res = await fireaccess.initializeQuiz(SYMBOLS, ROOMID, PERIODLEN, ENDDATE);
     assert.notExists(res, "initQuiz returned something when it shouldn't have.");
   }).timeout(0);
 
-  it("test initDates", async () => {
+  it("test initDates is successful", async () => {
     const res = await fireaccess.initDates(SYMBOLS, ROUNDS);
     assert.deepEqual(res, DATESDICT);
   }).timeout(0);
 
-  it("test getChartUrls", async () => {
+  it("test getChartUrls is successful", async () => {
     const symbolIndex = 0;
     const urls = await fireaccess.getChartUrls(ROOMID, symbolIndex.toString(), DAYINDEX);
     assert.exists(urls, "getChartUrls didn't return anything");
